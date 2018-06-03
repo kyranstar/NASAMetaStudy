@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 import math
 
-def get_distribution_samples(data, num_samples, true_model, y_variance=1.0):
+def get_distribution_samples(data, num_samples, true_model, y_variance=0.0):
     """
     Given a set of normally distributed data, creates num_samples points of
     simulated data.

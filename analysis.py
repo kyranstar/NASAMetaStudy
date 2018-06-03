@@ -8,7 +8,11 @@ import math
 from sklearn.model_selection import train_test_split
 import datasampling
 
-def select_variables(model, data):
+SUBSET_FUNCS = {'LassoCV': lambda data: lasso_cv_mse(data), 
+                'LassoCVStd': lambda data: lasso_cv_mse(data, stddev=1.0),
+                'LassoBIC': lambda data: lasso_bic(data),}
+
+def select_variables(model):
     """
     Given a model, fits it to the data and gives a set of the 1-based indices of 
     non-zero regression coefficients. 
@@ -19,18 +23,23 @@ def select_variables(model, data):
     Example:
         If regression coefficients are [0.5, 0.4, 0.0, 3.0], returns {1, 2, 4}
     """
-    all_feats = data.drop(["y"], axis=1)
-    model.fit(all_feats, data[["y"]].values.ravel())
     coef = list(np.array(model.coef_).flat)
     return set([i+1 for i,x in enumerate(coef) if x != 0.0])
     
-def find_best_alpha_mse(data, test_data, alphas=np.arange(0.05,1.0,0.05)):
+def lasso_mse(data, test_data, alphas=np.arange(0.05,1.0,0.05), stddev=0):
     """
     Attempts to find the best lasso alpha value using generalized prediction mse.
     It first finds the CV MSE prediction scores associated with each alpha value,
-    and returns the largest alpha value within one standard deviation of the minimum
-    prediction score. This reduces generalization error from variance that would occur
+    and returns the largest alpha value within stddev standard deviations of the minimum
+    prediction score. If 0, this just returns the minimum prediction score. For 
+    larger values, this might reduce generalization error from variance that would occur
     from just selecting the minimum prediction score.
+    
+    Arguments:
+        data:
+        test_data:
+        alphas:
+        stddev:
     """
     def mse_prediction(alpha, trainx, trainy, testx, testy):
         #model.fit(predictors, data[['y']])
@@ -44,16 +53,20 @@ def find_best_alpha_mse(data, test_data, alphas=np.arange(0.05,1.0,0.05)):
     testx = test_data.drop(['y'], axis=1)
     testy = test_data[['y']]
     #print(list(map(lambda a: mse_prediction(a), alphas)))
-    return min(alphas, key=lambda alpha: mse_prediction(alpha, trainx, trainy, testx, testy))
-    #scores = np.array([mse_prediction(a, trainx, trainy, testx, testy) for a in alphas])
-    #stddev = scores.std()
-    #minscore = scores.min()
+    if stddev == 0:
+        return min(alphas, key=lambda alpha: mse_prediction(alpha, trainx, trainy, testx, testy))
+    scores = np.array([mse_prediction(a, trainx, trainy, testx, testy) for a in alphas])
+    std = scores.std()*stddev
+    minscore = scores.min()
     # Remove all alphas whose mse is above one standard deviation from min mse
-    #best_alpha = np.array([a[0] for a in zip(alphas, scores) if a[1] <= minscore + stddev]).max()
+    best_alpha = np.array([a[0] for a in zip(alphas, scores) if a[1] <= minscore + std]).max()
 
-    #return best_alpha
+    model = Lasso(alpha=best_alpha)
+    model.fit(data.drop(["y"], axis=1), data[['y']])
 
-def find_best_alpha_cv_mse(data, cv=10, alphas=np.arange(0.01,1.0,0.05)):
+    return model
+
+def lasso_cv_mse(data, cv=10, alphas=np.arange(0.01,1.0,0.05), stddev=0):
     """
     Attempts to find the best lasso alpha value using generalized prediction mse.
     It first finds the CV MSE prediction scores associated with each alpha value,
@@ -61,7 +74,7 @@ def find_best_alpha_cv_mse(data, cv=10, alphas=np.arange(0.01,1.0,0.05)):
     prediction score. This reduces generalization error from variance that would occur
     from just selecting the minimum prediction score.
     """
-    def mse_prediction(alpha):
+    def mse_prediction(alpha, data):
         #model.fit(predictors, data[['y']])
         score = 0.0
         for i in range(cv):
@@ -78,15 +91,22 @@ def find_best_alpha_cv_mse(data, cv=10, alphas=np.arange(0.01,1.0,0.05)):
             score += mean_squared_error(testy, model.predict(testx))
         
         return score/cv
-    scores = np.array([mse_prediction(a) for a in alphas])
-    stddev = scores.std()
-    minscore = scores.min()
-    # Remove all alphas whose mse is above one standard deviation from min mse
-    best_alpha = np.array([a[0] for a in zip(alphas, scores) if a[1] <= minscore + stddev]).max()
+    
+    if stddev == 0:
+        best_alpha = min(alphas, key=lambda alpha: mse_prediction(alpha,data))
+    else:
+        scores = np.array([mse_prediction(a, data) for a in alphas])
+        std = scores.std()*stddev
+        minscore = scores.min()
+        # Remove all alphas whose mse is above one standard deviation from min mse
+        best_alpha = np.array([a[0] for a in zip(alphas, scores) if a[1] <= minscore + std]).max()
+    
+    model = Lasso(alpha=best_alpha)
+    model.fit(data.drop(["y"], axis=1), data[['y']])
 
-    return best_alpha
+    return model
 
-def find_best_alpha_bic(data):
+def lasso_bic(data):
     """
     Attempts to find the best lasso alpha value fitting a dataset using the BIC
     metric: https://stats.stackexchange.com/questions/126898/tuning-alpha-parameter-in-lasso-linear-model-in-scikitlearn
@@ -112,9 +132,9 @@ def find_best_alpha_bic(data):
     #        best_alpha = alpha
     model = LassoLarsIC(criterion='bic')
     model.fit(predictors, data[['y']])
-    return model.alpha_
+    return model
 
-def plot_subset_accuracy(df, sample_range, trials):
+def subset_accuracy(df, sample_range, trials, subset_metrics, subset_methods, error_types):
     """
     Plots various metrics of how accurately lasso can select the true variables
     given certain numbers of samples.
@@ -124,119 +144,88 @@ def plot_subset_accuracy(df, sample_range, trials):
         trials: The number of trials to do for each sample size
     """
     true_model = Lasso(alpha=.5)    
-    true_variables = select_variables(true_model, df)
+    true_model.fit(df.drop(["y"], axis=1), df[['y']])
+    true_variables = select_variables(true_model)
     print(true_model.coef_)
     print(true_model.intercept_)
     
-    arr_perfectly_chosen = []
-    arr_predictors_missed = []
-    arr_false_predictors_chosen = []
-    arr_symm_diff = []
-    arr_symm_diff_2 = []
-    arr_ave_symm_diff = []
+    output_data = pd.DataFrame({'sample_size':sample_range})
     
-    for num_samples in sample_range:
+    for method in subset_methods:
+        arr_perfectly_chosen = []
+        arr_predictors_missed = []
+        arr_false_predictors_chosen = []
+        arr_symm_diff = []
+        arr_symm_diff_2 = []
+        arr_ave_symm_diff = []
+        mse = []
         
-        num_perfectly_chosen = 0.0
-        num_predictors_missed = 0.0
-        num_false_predictors_chosen = 0.0
-        num_symm_diff = 0.0
-        num_symm_diff_2 = 0.0
-        ave_symm_diff = 0.0
-        for t in range(trials):    
-            sampled_data = datasampling.get_distribution_samples(df, num_samples, true_model)
-            #print(sampled_data.head())
-            best_alpha = find_best_alpha_mse(sampled_data, datasampling.get_distribution_samples(sampled_data, 100, true_model))
+        for num_samples in sample_range:
             
-            model = Lasso(alpha=best_alpha)
-            #model = LassoCV(alphas=np.arange(0.05,0.75,0.05))
-            chosen_variables = select_variables(model, sampled_data)
-            print(chosen_variables)
-            #print(chosen_variables)
-            #print(chosen_variables)
-            #pause
-            #print(best_alpha)
-            #print(len(chosen_variables))
-            symm_diff = len(true_variables.symmetric_difference(chosen_variables))
-            if chosen_variables == true_variables:
-                num_perfectly_chosen += 1
-            if len(chosen_variables) - len(true_variables.intersection(chosen_variables)) <= 1:
-                num_predictors_missed += 1
-            if len(true_variables) - len(true_variables.intersection(chosen_variables)) <= 1:
-                num_false_predictors_chosen += 1
-            if symm_diff <= 1:
-                num_symm_diff += 1
-            if symm_diff <= 2:
-                num_symm_diff_2 += 1
-            ave_symm_diff += symm_diff
-        
-        print("With %d samples:" % num_samples)
-        print("%0.2f%% trials perfectly chosen" % (num_perfectly_chosen/trials*100))
-        arr_perfectly_chosen.append(num_perfectly_chosen/trials*100)
-        print("%0.2f%% trials missed <= 1 predictors" % (num_predictors_missed/trials*100))
-        arr_predictors_missed.append(num_predictors_missed/trials*100)
-        print("%0.2f%% trials had <= 1 false predictors" % (num_false_predictors_chosen/trials*100))
-        arr_false_predictors_chosen.append(num_false_predictors_chosen/trials*100)
-        print("%0.2f%% trials had <= 1 symmetric difference" % (num_symm_diff/trials*100))
-        arr_symm_diff.append(num_symm_diff/trials*100)
-        print("%0.2f%% trials had <= 2 symmetric difference" % (num_symm_diff_2/trials*100))
-        arr_symm_diff_2.append(num_symm_diff_2/trials*100)
-        print("%0.2f is average symmetric difference" % (ave_symm_diff/trials))
-        arr_ave_symm_diff.append(ave_symm_diff/trials)
-    
-    plt.plot(sample_range, arr_perfectly_chosen)
-    plt.plot(sample_range, arr_predictors_missed)
-    plt.plot(sample_range, arr_false_predictors_chosen)
-    plt.plot(sample_range, arr_symm_diff)
-    plt.plot(sample_range, arr_symm_diff_2)
-    plt.legend(["% that perfectly chose predictors", 
-                "% that missed <= 1 predictors", 
-                "% that chose <= 1 false predictors",
-                "% that had <= 1 symmetric difference", 
-                "% that had <= 2 symmetric difference"])
-    plt.ylim([0,101])
-    plt.ylabel('%')
-    plt.xlabel('Number of data samples')
-    plt.show()
+            sum_sq_err = 0.0
+            num_perfectly_chosen = 0.0
+            num_predictors_missed = 0.0
+            num_false_predictors_chosen = 0.0
+            num_symm_diff = 0.0
+            num_symm_diff_2 = 0.0
+            ave_symm_diff = 0.0
+            for t in range(trials):    
+                sampled_data = datasampling.get_distribution_samples(df, num_samples, true_model)
 
+                model = SUBSET_FUNCS[method](sampled_data)
 
-def plot_mse_prediction(df, sample_range, trials):
-    """
-    Plots the prediction accuracy of lasso for different training set sizes
-    """
-    true_model = Lasso(alpha=.5)    
-    select_variables(true_model, df)
-    mse = []
-    
-    for num_samples in sample_range:
-        sum_sq_err = 0.0
-        print(num_samples)
-        for t in range(trials):
-            train_data = datasampling.get_distribution_samples(df, num_samples, true_model)
-            model = Lasso(alpha=find_best_alpha_mse(train_data, datasampling.get_distribution_samples(df, 100, true_model)))
-            train_x = train_data.drop(["y"], axis=1)
-            model.fit(train_x, train_data[["y"]])
+                chosen_variables = select_variables(model)
+                #print(chosen_variables)
+                #print(chosen_variables)
+                #print(chosen_variables)
+                #pause
+                #print(best_alpha)
+                #print(len(chosen_variables))
+                symm_diff = len(true_variables.symmetric_difference(chosen_variables))
+                if chosen_variables == true_variables:
+                    num_perfectly_chosen += 1
+                if len(chosen_variables) - len(true_variables.intersection(chosen_variables)) <= 1:
+                    num_predictors_missed += 1
+                if len(true_variables) - len(true_variables.intersection(chosen_variables)) <= 1:
+                    num_false_predictors_chosen += 1
+                if symm_diff <= 1:
+                    num_symm_diff += 1
+                if symm_diff <= 2:
+                    num_symm_diff_2 += 1
+                ave_symm_diff += symm_diff
+                test_data = datasampling.get_distribution_samples(df, 1, true_model)
+                sum_sq_err += (test_data.loc[0, 'y'] - model.predict(test_data.drop(["y"], axis=1))[0])**2
             
-            test_data = datasampling.get_distribution_samples(df, 1, true_model)
-            test_x = test_data.drop(["y"], axis=1)
-            sum_sq_err += (test_data.loc[0, 'y'] - model.predict(test_x)[0])**2
-        err = sum_sq_err/trials
-        print(err)
-        mse.append(err)
-        
-    plt.figure()
-    plt.plot(sample_range, mse)
-    plt.ylabel('Prediction MSE')
-    plt.xlabel('Number of data samples')
-    plt.show()
+            print("With %d samples:" % num_samples)
+            print("%0.2f%% trials perfectly chosen" % (num_perfectly_chosen/trials*100))
+            arr_perfectly_chosen.append(num_perfectly_chosen/trials*100)
+            print("%0.2f%% trials missed <= 1 predictors" % (num_predictors_missed/trials*100))
+            arr_predictors_missed.append(num_predictors_missed/trials*100)
+            print("%0.2f%% trials had <= 1 false predictors" % (num_false_predictors_chosen/trials*100))
+            arr_false_predictors_chosen.append(num_false_predictors_chosen/trials*100)
+            print("%0.2f%% trials had <= 1 symmetric difference" % (num_symm_diff/trials*100))
+            arr_symm_diff.append(num_symm_diff/trials*100)
+            print("%0.2f%% trials had <= 2 symmetric difference" % (num_symm_diff_2/trials*100))
+            arr_symm_diff_2.append(num_symm_diff_2/trials*100)
+            print("%0.2f is average symmetric difference" % (ave_symm_diff/trials))
+            arr_ave_symm_diff.append(ave_symm_diff/trials)
+            mse.append(sum_sq_err/trials)
+        output_data[(method, 'perfectly_chosen')] = arr_perfectly_chosen
+        output_data[(method, 'predictors_missed')] = arr_predictors_missed
+        output_data[(method, 'false_predictors_chosen')] = arr_predictors_missed
+        output_data[(method, 'symm_diff')] = arr_symm_diff
+        output_data[(method, 'symm_diff_2')] = arr_symm_diff_2
+        output_data[(method, 'ave_symm_diff')] = arr_ave_symm_diff
+        output_data[(method, 'prediction_mse')] = mse
+    return output_data
     
 if __name__ == "__main__":
-    trials = 600
-    sample_range = [10, 15, 25, 35, 50, 75, 100, 150, 250]
+    trials = 400
+    sample_range = range(10,300,50)
     df = pd.read_csv("data.csv")
     #plot_lasso(df)
-    plot_mse_prediction(df, sample_range, trials)
-    plot_subset_accuracy(df, sample_range, trials)
+    #plot_mse_prediction(df, sample_range, trials)
+    #plot_subset_accuracy(df, sample_range, trials)
 #plt.matshow(df.corr())
 #plt.suptitle('Original data')
 #plt.show()
