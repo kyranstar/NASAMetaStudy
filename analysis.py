@@ -3,11 +3,9 @@ import numpy as np
 from sklearn.linear_model import Lasso
 from sklearn.linear_model import LassoLarsIC
 from sklearn.metrics import mean_squared_error
-import math
 from sklearn.model_selection import train_test_split
 import datasampling
 from multiprocessing import Pool
-import collections
 
 SUBSET_FUNCS = {'LassoCV': lambda data: lasso_cv_mse(data), 
                 'LassoCVStd': lambda data: lasso_cv_mse(data, stddev=1.0),
@@ -113,24 +111,14 @@ def lasso_bic(data):
     metric: https://stats.stackexchange.com/questions/126898/tuning-alpha-parameter-in-lasso-linear-model-in-scikitlearn
     """
     predictors = data.drop(["y"], axis=1)
-    #alphas = np.arange(0.1, 1.0, 0.05)
-    #best_score = np.inf
-    #best_alpha = 0
-    def bic_score(predictors, y, model):
-        sse = sum((model.predict(predictors) - y.values[0])**2)
-        s = np.count_nonzero(model.coef_)   
-        n = len(predictors.columns)
-        cn = math.sqrt(n)/(s*s)
-        print(math.log(sse/n) + s*math.log(n)/n*cn)
-        return math.log(sse/n) + abs(s)*math.log(n)/n*cn
-        
-    #for alpha in alphas:
-    #    model = Lasso(alpha=alpha)
-    #    model.fit(predictors, data[['y']])
-    #    score = bic_score(predictors, data[['y']], model)
-    #    if score < best_score:
-    #        best_score = score
-    #        best_alpha = alpha
+    #def bic_score(predictors, y, model):
+    #    sse = sum((model.predict(predictors) - y.values[0])**2)
+    #    s = np.count_nonzero(model.coef_)   
+    #    n = len(predictors.columns)
+    #    cn = math.sqrt(n)/(s*s)
+    #    print(math.log(sse/n) + s*math.log(n)/n*cn)
+    #    return math.log(sse/n) + abs(s)*math.log(n)/n*cn
+
     model = LassoLarsIC(criterion='bic')
     model.fit(predictors, data[['y']])
     return model
@@ -242,25 +230,3 @@ def subset_accuracy(df, sample_range, trials, subset_metrics, subset_methods, er
         output_data[(method, 'prediction_mse')] = mse
     pool.close()
     return output_data
-    
-if __name__ == "__main__":
-    trials = 400
-    sample_range = range(10,300,50)
-    df = pd.read_csv("data.csv")
-    #plot_lasso(df)
-    #plot_mse_prediction(df, sample_range, trials)
-    #plot_subset_accuracy(df, sample_range, trials)
-#plt.matshow(df.corr())
-#plt.suptitle('Original data')
-#plt.show()
-
-#plt.matshow(sampled_data.corr())
-#plt.suptitle('Sampled data')
-#plt.show()
-
-    #scatter_matrix(df, diagonal='kde')
-#plt.suptitle('Original data')
-#plt.show()
-#scatter_matrix(sampled_data, diagonal='kde')
-#plt.suptitle('Sampled data')
-#plt.show()

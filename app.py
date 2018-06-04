@@ -1,10 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Thu May 31 11:17:33 2018
-
-@author: Kyran Adams
-"""
-
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
@@ -41,24 +34,10 @@ app.layout = \
                 {'label': 'Experiment', 'value': 2}], 
             value=2, vertical=False, id='tabs'
         ),
-        html.Div(id='tab-output'),
-        # Hidden div inside the app that stores the intermediate value
-        html.Div(id='graph-data-df', style={'display': 'none'}),
-        
-    ], style={
-        'width': '80%',
-        'fontFamily': 'Sans-Serif',
-        'margin-left': 'auto',
-        'margin-right': 'auto'
-        }
-    )
-
-    
-def display_data():
-    return html.Div([
-            ], className="page")
-def display_experiment():
-    return \
+        # Data tab
+        html.Div([
+            ], className="page", style={'display':'none'}, id='data-tab'),
+        # Experiment tab
         html.Div([
             html.Div([
                 html.Div([
@@ -151,14 +130,25 @@ def display_experiment():
                         html.Button('Run Experiment', id='run-button', className='button-primary')
                     ], className='four columns',style={'float':'right','vertical-align':'bottom'})
                 ], className='row'),
-        ], className='page')
+        ], className='page', style={'display':'none'}, id='experiment-tab'),
+        # Hidden div inside the app that stores the intermediate value
+        html.Div(id='graph-data-df', style={'display': 'none'}),
+        
+    ], style={
+        'width': '80%',
+        'fontFamily': 'Sans-Serif',
+        'margin-left': 'auto',
+        'margin-right': 'auto'
+        }
+    )
 
-@app.callback(Output('tab-output', 'children'), [Input('tabs', 'value')])
-def display_tab_content(value):
-    if value == 1:
-        return display_data()
-    else:
-        return display_experiment()
+
+@app.callback(Output('data-tab', 'style'), [Input('tabs', 'value')])
+def display_data_content(tabid):
+    return {'display': 'block' if tabid == 1 else 'none'}
+@app.callback(Output('experiment-tab', 'style'), [Input('tabs', 'value')])
+def display_experiment_content(tabid):
+    return {'display': 'block' if tabid == 2 else 'none'}
 
 
 @app.callback(Output('graph-data-df', 'children'),

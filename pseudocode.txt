@@ -23,6 +23,7 @@ Ways to find optimal lasso parameter:
 	- VISA
 	
 TODO:
+	- Carry over/save data abetween tabs
 	- Design and implement data tab
 		- Variance
 		- Import data
@@ -31,7 +32,8 @@ TODO:
 		- Change what data looks like
 	- Error messages
 		-http://xeodou.github.io/react-crouton/
-	- Parallelization
+	- More obvious "computing" screen
+	- Parallelization on trial
 	- More options for variable selection
 	- More options for residual display
 	- Export to PDF

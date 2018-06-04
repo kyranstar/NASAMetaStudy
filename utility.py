@@ -1,9 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Wed May 30 15:58:36 2018
-
-@author: Kyran Adams
-"""
 import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.linear_model import Lasso
