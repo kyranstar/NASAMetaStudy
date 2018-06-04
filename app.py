@@ -41,7 +41,10 @@ app.layout = \
                 {'label': 'Experiment', 'value': 2}], 
             value=2, vertical=False, id='tabs'
         ),
-        html.Div(id='tab-output')
+        html.Div(id='tab-output'),
+        # Hidden div inside the app that stores the intermediate value
+        html.Div(id='graph-data-df', style={'display': 'none'}),
+        
     ], style={
         'width': '80%',
         'fontFamily': 'Sans-Serif',
@@ -148,8 +151,6 @@ def display_experiment():
                         html.Button('Run Experiment', id='run-button', className='button-primary')
                     ], className='four columns',style={'float':'right','vertical-align':'bottom'})
                 ], className='row'),
-                # Hidden div inside the app that stores the intermediate value
-                html.Div(id='graph-data-df', style={'display': 'none'}),
         ], className='page')
 
 @app.callback(Output('tab-output', 'children'), [Input('tabs', 'value')])

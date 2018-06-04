@@ -1,5 +1,4 @@
 import pandas as pd
-import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.linear_model import Lasso
 from sklearn.linear_model import LassoLarsIC
@@ -7,6 +6,8 @@ from sklearn.metrics import mean_squared_error
 import math
 from sklearn.model_selection import train_test_split
 import datasampling
+from multiprocessing import Pool
+import collections
 
 SUBSET_FUNCS = {'LassoCV': lambda data: lasso_cv_mse(data), 
                 'LassoCVStd': lambda data: lasso_cv_mse(data, stddev=1.0),
@@ -134,6 +135,56 @@ def lasso_bic(data):
     model.fit(predictors, data[['y']])
     return model
 
+def worker_func(method, true_model, df, trials, num_samples, true_variables):
+    
+    model_generator = SUBSET_FUNCS[method]
+    sum_sq_err = 0.0
+    num_perfectly_chosen = 0.0
+    num_predictors_missed = 0.0
+    num_false_predictors_chosen = 0.0
+    num_symm_diff = 0.0
+    num_symm_diff_2 = 0.0
+    ave_symm_diff = 0.0
+    
+    for t in range(trials):    
+        sampled_data = datasampling.get_distribution_samples(df, num_samples, true_model)
+
+        model = model_generator(sampled_data)
+
+        chosen_variables = select_variables(model)
+
+        symm_diff = len(true_variables.symmetric_difference(chosen_variables))
+        if chosen_variables == true_variables:
+            num_perfectly_chosen += 1
+        if len(chosen_variables) - len(true_variables.intersection(chosen_variables)) <= 1:
+            num_predictors_missed += 1
+        if len(true_variables) - len(true_variables.intersection(chosen_variables)) <= 1:
+            num_false_predictors_chosen += 1
+        if symm_diff <= 1:
+            num_symm_diff += 1
+        if symm_diff <= 2:
+            num_symm_diff_2 += 1
+        ave_symm_diff += symm_diff
+        test_data = datasampling.get_distribution_samples(df, 1, true_model)
+        sum_sq_err += (test_data.loc[0, 'y'] - model.predict(test_data.drop(["y"], axis=1))[0])**2
+    
+    print("With %d samples:" % num_samples)
+    print("%0.2f%% trials perfectly chosen" % (num_perfectly_chosen/trials*100))
+    print("%0.2f%% trials missed <= 1 predictors" % (num_predictors_missed/trials*100))
+    print("%0.2f%% trials had <= 1 false predictors" % (num_false_predictors_chosen/trials*100))
+    print("%0.2f%% trials had <= 1 symmetric difference" % (num_symm_diff/trials*100))
+    print("%0.2f%% trials had <= 2 symmetric difference" % (num_symm_diff_2/trials*100))
+    print("%0.2f is average symmetric difference" % (ave_symm_diff/trials))
+    
+    return (num_samples,
+            num_perfectly_chosen/trials*100,
+            num_predictors_missed/trials*100,
+            num_false_predictors_chosen/trials*100,
+            num_symm_diff/trials*100,
+            num_symm_diff_2/trials*100,
+            ave_symm_diff/trials,
+            sum_sq_err/trials)
+
 def subset_accuracy(df, sample_range, trials, subset_metrics, subset_methods, error_types):
     """
     Plots various metrics of how accurately lasso can select the true variables
@@ -151,7 +202,10 @@ def subset_accuracy(df, sample_range, trials, subset_metrics, subset_methods, er
     
     output_data = pd.DataFrame({'sample_size':sample_range})
     
+    pool = Pool(processes=4)
+    
     for method in subset_methods:
+            
         arr_perfectly_chosen = []
         arr_predictors_missed = []
         arr_false_predictors_chosen = []
@@ -160,56 +214,25 @@ def subset_accuracy(df, sample_range, trials, subset_metrics, subset_methods, er
         arr_ave_symm_diff = []
         mse = []
         
-        for num_samples in sample_range:
+        processes = [pool.apply_async(worker_func, (method, true_model, df, trials, num_samples, true_variables)) for num_samples in sample_range]
+        
+        for (num_samples,
+             num_perfectly_chosen,
+             num_predictors_missed,
+             num_false_predictors_chosen,
+             num_symm_diff,
+             num_symm_diff_2,
+             ave_symm_diff,
+             sum_sq_err) in [p.get() for p in processes]:
             
-            sum_sq_err = 0.0
-            num_perfectly_chosen = 0.0
-            num_predictors_missed = 0.0
-            num_false_predictors_chosen = 0.0
-            num_symm_diff = 0.0
-            num_symm_diff_2 = 0.0
-            ave_symm_diff = 0.0
-            for t in range(trials):    
-                sampled_data = datasampling.get_distribution_samples(df, num_samples, true_model)
-
-                model = SUBSET_FUNCS[method](sampled_data)
-
-                chosen_variables = select_variables(model)
-                #print(chosen_variables)
-                #print(chosen_variables)
-                #print(chosen_variables)
-                #pause
-                #print(best_alpha)
-                #print(len(chosen_variables))
-                symm_diff = len(true_variables.symmetric_difference(chosen_variables))
-                if chosen_variables == true_variables:
-                    num_perfectly_chosen += 1
-                if len(chosen_variables) - len(true_variables.intersection(chosen_variables)) <= 1:
-                    num_predictors_missed += 1
-                if len(true_variables) - len(true_variables.intersection(chosen_variables)) <= 1:
-                    num_false_predictors_chosen += 1
-                if symm_diff <= 1:
-                    num_symm_diff += 1
-                if symm_diff <= 2:
-                    num_symm_diff_2 += 1
-                ave_symm_diff += symm_diff
-                test_data = datasampling.get_distribution_samples(df, 1, true_model)
-                sum_sq_err += (test_data.loc[0, 'y'] - model.predict(test_data.drop(["y"], axis=1))[0])**2
+            arr_perfectly_chosen.append(num_perfectly_chosen)
+            arr_predictors_missed.append(num_predictors_missed)
+            arr_false_predictors_chosen.append(num_false_predictors_chosen)
+            arr_symm_diff.append(num_symm_diff)
+            arr_symm_diff_2.append(num_symm_diff_2)
+            arr_ave_symm_diff.append(ave_symm_diff)
+            mse.append(sum_sq_err)
             
-            print("With %d samples:" % num_samples)
-            print("%0.2f%% trials perfectly chosen" % (num_perfectly_chosen/trials*100))
-            arr_perfectly_chosen.append(num_perfectly_chosen/trials*100)
-            print("%0.2f%% trials missed <= 1 predictors" % (num_predictors_missed/trials*100))
-            arr_predictors_missed.append(num_predictors_missed/trials*100)
-            print("%0.2f%% trials had <= 1 false predictors" % (num_false_predictors_chosen/trials*100))
-            arr_false_predictors_chosen.append(num_false_predictors_chosen/trials*100)
-            print("%0.2f%% trials had <= 1 symmetric difference" % (num_symm_diff/trials*100))
-            arr_symm_diff.append(num_symm_diff/trials*100)
-            print("%0.2f%% trials had <= 2 symmetric difference" % (num_symm_diff_2/trials*100))
-            arr_symm_diff_2.append(num_symm_diff_2/trials*100)
-            print("%0.2f is average symmetric difference" % (ave_symm_diff/trials))
-            arr_ave_symm_diff.append(ave_symm_diff/trials)
-            mse.append(sum_sq_err/trials)
         output_data[(method, 'perfectly_chosen')] = arr_perfectly_chosen
         output_data[(method, 'predictors_missed')] = arr_predictors_missed
         output_data[(method, 'false_predictors_chosen')] = arr_predictors_missed
@@ -217,6 +240,7 @@ def subset_accuracy(df, sample_range, trials, subset_metrics, subset_methods, er
         output_data[(method, 'symm_diff_2')] = arr_symm_diff_2
         output_data[(method, 'ave_symm_diff')] = arr_ave_symm_diff
         output_data[(method, 'prediction_mse')] = mse
+    pool.close()
     return output_data
     
 if __name__ == "__main__":
