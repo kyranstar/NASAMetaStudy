@@ -31,6 +31,7 @@ TODO:
 		- Change parametric distribution of data
 		- True model
 		- Connect data tab and experiment tab
+		- Make certain columns of table uneditable (not implemented in Dash yet)
 	- Debounce run button
 	- Live update graph?
 	- Error messages

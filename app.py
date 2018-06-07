@@ -74,6 +74,12 @@ def data_tab():
                                         n_clicks=0,
                                         style={
                                             'width':'100%'
+                                        }),
+                            html.Button("Fit Distributions",
+                                        id='fit-distributions-button',
+                                        n_clicks=0,
+                                        style={
+                                            'width':'100%'
                                         })
                             ],
                              className='eight columns'),
@@ -220,30 +226,44 @@ app.layout = \
 
 @app.callback(Output('data-tab', 'style'), [Input('tabs', 'value')])
 def display_data_content(tabid):
+    """
+    Displays data tab when it is selected.
+    """
     return {'display': 'block' if tabid == DATA_TAB else 'none'}
 
 @app.callback(Output('experiment-tab', 'style'), [Input('tabs', 'value')])
 def display_experiment_content(tabid):
+    """
+    Displays experiment tab when it is selected.
+    """
     return {'display': 'block' if tabid == EXPERIMENT_TAB else 'none'}
 
 @app.callback(Output('distributions-table', 'rows'),
               state=[State('distributions-table', 'rows')],
               events=[Event('add-variable-button', 'click')])
 def add_row_distributions_table(df_dict):
+    """
+    Adds a row to the distribution table when the add variable button is clicked.
+    """
     return pd.DataFrame(df_dict).append(NEW_ROW, ignore_index=True).to_dict('records')
 
-@app.callback(Output('correlation-table', 'rows'), 
-              [Input('distributions-table-df', 'children')], 
+@app.callback(Output('correlation-table', 'rows'),
+              [Input('distributions-table-df', 'children')],
               state=[State('correlation-table', 'rows')])
 def update_correlation_table(dist_table_json, corr_table_dict):
+    """
+    Updates the correlation table whenever the distributions table is updated.
+    """
     dist_table = pd.read_json(dist_table_json)
+    dist_table.index = dist_table.index.map(int)
+    dist_table = dist_table.sort_index()
     if not 'Name' in dist_table.columns:
         return [{}]
-    
+
     corr_table = pd.DataFrame(corr_table_dict)
     names = dist_table['Name'].tolist()
     names = list(filter(lambda x: x != 'Name', names))
-    
+
     for col in corr_table.columns:
         if col == 'Name':
             continue
@@ -265,53 +285,66 @@ def update_correlation_table(dist_table_json, corr_table_dict):
     corr_table = corr_table.dropna()
     # sort rows
     if len(names) > 0:
-        print(names)
         sorted_cols = sorted(corr_table.index, key=lambda ind: names.index(corr_table.at[ind, 'Name']))
         corr_table = corr_table.reindex_axis(sorted_cols, axis=0)
-    
+
     return corr_table.to_dict('records')
 @app.callback(Output('correlation-table', 'columns'),
               [Input('correlation-table', 'rows')],
               state=[State('distributions-table-df', 'children')])
 def update_corr_table_columns(rows, dist_table_json):
+    """
+    Updates the columns of the correlation table whenever the rows are updated.
+    """
     corr_table = pd.DataFrame(rows)
     dist_table = pd.read_json(dist_table_json)
+    dist_table.index = dist_table.index.map(int)
+    dist_table = dist_table.sort_index()
+    
     if not 'Name' in dist_table.columns:
         return corr_table.columns
     names = dist_table['Name'].tolist()
     names = list(filter(lambda x: x != 'Name', names))
-    
+
     # sort columns based on position in distribution table, where the Name column goes first always
     sorted_cols = sorted(corr_table.columns, key=lambda col: -1 if col == "Name" else names.index(col))
     corr_table = corr_table.reindex_axis(sorted_cols, axis=1)
-    
-    return corr_table.columns
-    
 
-@app.callback(Output('distributions-table-df', 'children'), 
+    return corr_table.columns
+
+
+@app.callback(Output('distributions-table-df', 'children'),
               [Input('distributions-table', 'row_update'),
                Input('distributions-table', 'rows'),
                Input('add-variable-button', 'n_clicks')],
                state=[State('distributions-table-df', 'children')],
-               events=[Event('add-variable-button', 'click')])  
+               events=[Event('add-variable-button', 'click')])
 def update_distributions_df(update, rows, nclicks, df_json):
+    """
+    Updates the internal representation of the distributions table when the
+    add variable button is clicked.
+    """
     newrows = pd.DataFrame(rows)
     # Add Variable button was clicked
     if df_json == newrows.to_json():
         newrows = newrows.append(NEW_ROW, ignore_index=True)
     return newrows.to_json()
 
-@app.callback(Output('correlation-heatmap', 'figure'), 
-              [Input('correlation-table', 'rows')])
-def update_correlation_heatmap(corr_dict):
+@app.callback(Output('correlation-heatmap', 'figure'),
+              [Input('correlation-table', 'columns')],
+              state=[State('correlation-table', 'rows')],
+              )
+def update_correlation_heatmap(cols, corr_dict):
+    """
+    Updates the correlation heatmap when the correlation table is updated.
+    """
     corr_df = pd.DataFrame(corr_dict)
+    corr_df = corr_df[cols]
     if not 'Name' in corr_df.columns:
         return {'data':[{'type': 'heatmap'}]}
     # flip y axis so it shows up correctly
-    print(corr_df)
     corr_df = corr_df.reindex(index=corr_df.index[::-1])
-    print(corr_df)
-    
+
     data = {
                 'z': corr_df.drop(['Name'], axis=1).values,
                 'x': corr_df.drop(['Name'], axis=1).columns,
@@ -339,6 +372,10 @@ def update_correlation_heatmap(corr_dict):
                      State('error-types', 'value')],
               events=[Event('run-button', 'click')])
 def update_graph_data(data_dict, corr_dict, trials, samples_min, samples_max, samples_step, subset_metrics, subset_methods, error_types):
+    """
+    Runs the experiment; updates the internal json representation of the results when
+    the run button is clicked.
+    """
     if None in [trials, samples_min, samples_max, samples_step, subset_metrics, subset_methods, error_types]:
         return pd.DataFrame().to_json()
     data = pd.DataFrame(data_dict)
@@ -354,6 +391,10 @@ def update_graph_data(data_dict, corr_dict, trials, samples_min, samples_max, sa
 
 
 def load_graph_data(cached_df):
+    """
+    Loads the result of the experiment from json to a dataframe. This needs a 
+    special function because we are using tuple indices.
+    """
     # load json
     df_dict = json.loads(cached_df)
     def eval_tuple(strobj):
@@ -369,6 +410,9 @@ def load_graph_data(cached_df):
 @app.callback(Output('prediction-error-graph', 'figure'),
               [Input('graph-data-df', 'children')])
 def prediction_error_update_graph(cached_df):
+    """
+    Update the prediction error graph from the results of the experiment.
+    """
     if cached_df == None:
         return {'data':[]}
     df = load_graph_data(cached_df)
@@ -393,6 +437,9 @@ def prediction_error_update_graph(cached_df):
 @app.callback(Output('variable-selection-graph', 'figure'),
               [Input('graph-data-df', 'children')])
 def variable_selection_update_graph(cached_df):
+    """
+    Updates the variable selection graph from the results of the experiment.
+    """
     if cached_df == None:
         return {'data':[]}
     df = load_graph_data(cached_df)
