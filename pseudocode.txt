@@ -23,13 +23,14 @@ Ways to find optimal lasso parameter:
 	- VISA
 	
 TODO:
-	- Design and implement data tab
-		- Variance
+	- Implement data tab
 		- Import data
 			- Allow input of distribution of data
 			- Calculate distribution attributes (mean, variance, covariance)
 		- Data imputation?
 		- Change parametric distribution of data
+		- True model
+		- Connect data tab and experiment tab
 	- Debounce run button
 	- Live update graph?
 	- Error messages

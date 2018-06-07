@@ -8,7 +8,6 @@ import plotly.graph_objs as go
 import json
 from ast import literal_eval
 import dash_table_experiments as dt
-import numpy as np
 
 SUBSET_METRICS = [
     {'label': 'perfectly_chosen', 'value': 'perfectly_chosen'},
@@ -32,6 +31,9 @@ app.scripts.config.serve_locally = True
 app.config['suppress_callback_exceptions']=True
 
 def data_tab():
+    """
+    Construct the initial data tab in the layout.
+    """
     return html.Div([
             # Data upload
             html.Div([
@@ -94,6 +96,9 @@ def data_tab():
                     ], className='row'),
             ], className="page", style={'display':'none'}, id='data-tab')
 def experiment_tab():
+    """
+    Construct the initial experiment tab in the layout.
+    """
     return html.Div([
             html.Div([
                 html.Div([
@@ -245,7 +250,6 @@ def update_correlation_table(dist_table_json, corr_table_dict):
         if not col in names:
             # delete col and row
             corr_table = corr_table.drop([col], axis=1)
-            print(corr_table)
             corr_table = corr_table.query("Name != '{0}'".format(col))
     for name in names:
         if not name in corr_table.columns:
@@ -256,15 +260,32 @@ def update_correlation_table(dist_table_json, corr_table_dict):
             row["Name"] = name
             corr_table = corr_table.append(row, ignore_index=True)
             corr_table[name] = 0.0
-    # TODO sort rows cols
 
     # remove rows without names
     corr_table = corr_table.dropna()
+    # sort rows
+    if len(names) > 0:
+        print(names)
+        sorted_cols = sorted(corr_table.index, key=lambda ind: names.index(corr_table.at[ind, 'Name']))
+        corr_table = corr_table.reindex_axis(sorted_cols, axis=0)
+    
     return corr_table.to_dict('records')
 @app.callback(Output('correlation-table', 'columns'),
-              [Input('correlation-table', 'rows')])
-def update_corr_table_columns(rows):
-    return pd.DataFrame(rows).columns
+              [Input('correlation-table', 'rows')],
+              state=[State('distributions-table-df', 'children')])
+def update_corr_table_columns(rows, dist_table_json):
+    corr_table = pd.DataFrame(rows)
+    dist_table = pd.read_json(dist_table_json)
+    if not 'Name' in dist_table.columns:
+        return corr_table.columns
+    names = dist_table['Name'].tolist()
+    names = list(filter(lambda x: x != 'Name', names))
+    
+    # sort columns based on position in distribution table, where the Name column goes first always
+    sorted_cols = sorted(corr_table.columns, key=lambda col: -1 if col == "Name" else names.index(col))
+    corr_table = corr_table.reindex_axis(sorted_cols, axis=1)
+    
+    return corr_table.columns
     
 
 @app.callback(Output('distributions-table-df', 'children'), 
@@ -278,13 +299,32 @@ def update_distributions_df(update, rows, nclicks, df_json):
     # Add Variable button was clicked
     if df_json == newrows.to_json():
         newrows = newrows.append(NEW_ROW, ignore_index=True)
-    print(newrows)
     return newrows.to_json()
 
 @app.callback(Output('correlation-heatmap', 'figure'), 
               [Input('correlation-table', 'rows')])
-def update_correlation_heatmap(table_dict):
-    return {'data':[]}
+def update_correlation_heatmap(corr_dict):
+    corr_df = pd.DataFrame(corr_dict)
+    if not 'Name' in corr_df.columns:
+        return {'data':[{'type': 'heatmap'}]}
+    # flip y axis so it shows up correctly
+    print(corr_df)
+    corr_df = corr_df.reindex(index=corr_df.index[::-1])
+    print(corr_df)
+    
+    data = {
+                'z': corr_df.drop(['Name'], axis=1).values,
+                'x': corr_df.drop(['Name'], axis=1).columns,
+                'y': corr_df['Name'].tolist(),
+                'colorscale':'Viridis',
+                'type': 'heatmap'
+            }
+    layout = go.Layout(
+                title="Correlation heatmap",
+                xaxis={'side': 'top'},
+                yaxis={},
+            )
+    return {'data':[data], 'layout': layout}
 
 
 @app.callback(Output('graph-data-df', 'children'),
@@ -304,7 +344,6 @@ def update_graph_data(data_dict, corr_dict, trials, samples_min, samples_max, sa
     data = pd.DataFrame(data_dict)
     sample_range = range(int(samples_min), int(samples_max), int(samples_step))
     df = analysis.subset_accuracy(data, sample_range, int(trials), subset_metrics, subset_methods, error_types)
-    print(df)
     # convert dataframe to nested dictionary
     df_dict = df.groupby(level=0).apply(lambda df: df.xs(df.name).to_dict()).to_dict()
     # convert tuple keys to strings
