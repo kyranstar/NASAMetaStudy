@@ -32,6 +32,8 @@ TODO:
 		- True model
 		- Connect data tab and experiment tab
 		- Make certain columns of table uneditable (not implemented in Dash yet)
+			- Only use diagonal of correlations table
+		- Fix upload data handling... Currently uses timestamp of button click for callback
 	- Debounce run button
 	- Live update graph?
 	- Error messages

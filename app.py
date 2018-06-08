@@ -8,6 +8,8 @@ import plotly.graph_objs as go
 import json
 from ast import literal_eval
 import dash_table_experiments as dt
+import io
+import base64
 
 SUBSET_METRICS = [
     {'label': 'perfectly_chosen', 'value': 'perfectly_chosen'},
@@ -37,25 +39,13 @@ def data_tab():
     return html.Div([
             # Data upload
             html.Div([
-                    dcc.Upload(
+                    dcc.Upload(html.Button('Upload Data', id='upload-data-button', style={'width':'100%'}),
                         id='upload-data',
-                        children=html.Div([
-                            'Import Data: Drag and Drop or ',
-                            html.A('Select Files')
-                        ]),
                         className='eight columns',
-                        style={
-                            'height': '60px',
-                            'lineHeight': '60px',
-                            'borderWidth': '1px',
-                            'borderStyle': 'dashed',
-                            'borderRadius': '5px',
-                            'textAlign': 'center',
-                            'margin': '10px'
-                        },
                     ),
                     ],
                     className='row'),
+            html.Div(id='input-data-df', style={'display': 'none'}),
             # Labels row
             html.Div([
                     html.Label('Distributions', className='eight columns'),
@@ -95,10 +85,12 @@ def data_tab():
                             dt.DataTable(rows=[{}],
                                          columns=['Name'],
                                          id='correlation-table'),
-                        ], className='six columns'),
+                        ], className='eight columns'),
+                    ], className='row'),
+            html.Div([
                     html.Div([
                             dcc.Graph(id='correlation-heatmap'),
-                        ], className ='six columns')
+                        ], className ='eight columns')
                     ], className='row'),
             ], className="page", style={'display':'none'}, id='data-tab')
 def experiment_tab():
@@ -194,7 +186,7 @@ def experiment_tab():
                         ),
                     ], className="two columns"),
                     html.Div([
-                        html.Button('Run Experiment', id='run-button', className='button-primary')
+                        html.Button('Run Experiment', n_clicks=0,id='run-button', className='button-primary')
                     ], className='four columns',style={'float':'right','vertical-align':'bottom'})
                 ], className='row'),
                 # Hidden div inside the app that stores the experiment results dataframe in json
@@ -238,14 +230,46 @@ def display_experiment_content(tabid):
     """
     return {'display': 'block' if tabid == EXPERIMENT_TAB else 'none'}
 
+@app.callback(Output('input-data-df', 'children'),
+              [Input('upload-data', 'contents'),
+               Input('upload-data', 'filename')])
+def save_input_data(contents, filename):
+    if contents == None:
+        return ""
+    content_type, content_string = contents.split(',')
+
+    decoded = base64.b64decode(content_string)
+    if filename is None:
+        return ""
+    if filename.endswith(".csv"):
+        print("Saving CSV")
+        df = pd.DataFrame.from_csv(io.StringIO(decoded.decode('utf-8'))).to_json()
+        return df
 @app.callback(Output('distributions-table', 'rows'),
-              state=[State('distributions-table', 'rows')],
-              events=[Event('add-variable-button', 'click')])
-def add_row_distributions_table(df_dict):
+              [Input('input-data-df', 'children'),
+               Input('upload-data-button', 'n_clicks_timestamp'),
+               Input('add-variable-button', 'n_clicks_timestamp')],
+              state=[State('distributions-table', 'rows')])
+def add_row_distributions_table(uploaded_data, upload_timestamp, add_var_timestamp, df_dict):
     """
     Adds a row to the distribution table when the add variable button is clicked.
+    Also updates the distribution variables when files are uploaded.
     """
-    return pd.DataFrame(df_dict).append(NEW_ROW, ignore_index=True).to_dict('records')
+    df = pd.DataFrame(df_dict)
+    if upload_timestamp == None and add_var_timestamp == None:
+        return df.to_dict('records')
+    # If the add variable button was clicked
+    if (upload_timestamp == None and add_var_timestamp != None) or \
+        (not None in [upload_timestamp, add_var_timestamp] and add_var_timestamp > upload_timestamp):
+        return df.append(NEW_ROW, ignore_index=True).to_dict('records')
+    # otherwise, data was uploaded
+    uploaded_df = pd.read_json(uploaded_data)
+    for newcol in uploaded_df.columns:
+        if not 'Name' in df.columns or not newcol in df['Name'].tolist():
+            row = NEW_ROW.copy()
+            row['Name'] = newcol
+            df = df.append(row, ignore_index=True)
+    return df.to_dict('records')
 
 @app.callback(Output('correlation-table', 'rows'),
               [Input('distributions-table-df', 'children')],
@@ -289,6 +313,7 @@ def update_correlation_table(dist_table_json, corr_table_dict):
         corr_table = corr_table.reindex_axis(sorted_cols, axis=0)
 
     return corr_table.to_dict('records')
+
 @app.callback(Output('correlation-table', 'columns'),
               [Input('correlation-table', 'rows')],
               state=[State('distributions-table-df', 'children')])
@@ -300,7 +325,7 @@ def update_corr_table_columns(rows, dist_table_json):
     dist_table = pd.read_json(dist_table_json)
     dist_table.index = dist_table.index.map(int)
     dist_table = dist_table.sort_index()
-    
+
     if not 'Name' in dist_table.columns:
         return corr_table.columns
     names = dist_table['Name'].tolist()
@@ -392,7 +417,7 @@ def update_graph_data(data_dict, corr_dict, trials, samples_min, samples_max, sa
 
 def load_graph_data(cached_df):
     """
-    Loads the result of the experiment from json to a dataframe. This needs a 
+    Loads the result of the experiment from json to a dataframe. This needs a
     special function because we are using tuple indices.
     """
     # load json
