@@ -1,27 +1,15 @@
-To plot subset accuracy of data
-	- Get true variables (1, 7, 12)
-	- For each number of samples n (x-axis)
-		- Generate n samples based on data distribution
-		- Find optimal lasso parameter
-		- Create lasso model and compare with true variables
-		
 Ways to find optimal lasso parameter:
 	- Min MSE CV
-		- Almost always overfits
 	- Min prediction MSE
-		- Almost always overfits
 	- Min Bayseian Information Criteria (BIC)
-		- Almost always overfits
 	- Min Prediction CV MSE + one standard dev (tradeoff variance for bias)
-		- Is ok? not great
 	- Min MSE CV + One standard dev
-		- It's ok too
 	- Non-negative Garotte
 	- Adaptive Lasso/LARS?
 	- SCAD
 	- Dantzig
 	- VISA
-	
+
 TODO:
 	- Implement data tab
 		- Import data
@@ -38,6 +26,7 @@ TODO:
 	- Live update graph?
 	- Error messages
 		-http://xeodou.github.io/react-crouton/
+	- Clean up code with variable selection and error, make more general
 	- More obvious "computing" screen
 	- Parallelization on trial
 	- More options for variable selection
