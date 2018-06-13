@@ -1,0 +1,458 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>984</width>
+    <height>1585</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Simulation</string>
+  </property>
+  <property name="windowOpacity">
+   <double>1.000000000000000</double>
+  </property>
+  <property name="tabShape">
+   <enum>QTabWidget::Rounded</enum>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QHBoxLayout" name="horizontalLayout">
+    <item>
+     <widget class="QTabWidget" name="tab_panel">
+      <property name="currentIndex">
+       <number>0</number>
+      </property>
+      <widget class="QWidget" name="datatab">
+       <attribute name="title">
+        <string>Data</string>
+       </attribute>
+       <layout class="QGridLayout" name="gridLayout" rowstretch="0" columnstretch="0,0">
+        <item row="0" column="0">
+         <widget class="QScrollArea" name="datatab_scroll">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="widgetResizable">
+           <bool>true</bool>
+          </property>
+          <widget class="QWidget" name="scrollAreaWidgetContents_2">
+           <property name="geometry">
+            <rect>
+             <x>0</x>
+             <y>0</y>
+             <width>932</width>
+             <height>1459</height>
+            </rect>
+           </property>
+           <layout class="QGridLayout" name="gridLayout_2">
+            <item row="5" column="0">
+             <widget class="CorrelationsTable" name="correlations_table"/>
+            </item>
+            <item row="2" column="0" colspan="2">
+             <widget class="DistributionsList" name="distributions_list"/>
+            </item>
+            <item row="0" column="0" colspan="3">
+             <widget class="QPushButton" name="upload_button">
+              <property name="text">
+               <string>Upload Data</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QLabel" name="distributions_label">
+              <property name="text">
+               <string>Distributions</string>
+              </property>
+              <property name="buddy">
+               <cstring>distributions_list</cstring>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="2">
+             <widget class="QLabel" name="true_model_label">
+              <property name="text">
+               <string>True Model</string>
+              </property>
+              <property name="buddy">
+               <cstring>true_model_panel</cstring>
+              </property>
+             </widget>
+            </item>
+            <item row="4" column="0">
+             <widget class="QLabel" name="correlations_label">
+              <property name="text">
+               <string>Correlations</string>
+              </property>
+              <property name="buddy">
+               <cstring>correlations_table</cstring>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="2" rowspan="4">
+             <widget class="QTextEdit" name="true_model_panel">
+              <property name="html">
+               <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:7.8pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;def predict(args):&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;	return (args[0]+args[1])&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="0">
+             <widget class="QPushButton" name="add_var_button">
+              <property name="text">
+               <string>Add Variable</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="experimenttab">
+       <attribute name="title">
+        <string>Experiment</string>
+       </attribute>
+       <layout class="QGridLayout" name="gridLayout_3">
+        <item row="3" column="2">
+         <widget class="QLabel" name="num_samples_max_label">
+          <property name="text">
+           <string># Samples Max</string>
+          </property>
+          <property name="buddy">
+           <cstring>num_samples_max_input</cstring>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="2">
+         <widget class="QLineEdit" name="num_samples_max_input"/>
+        </item>
+        <item row="4" column="0">
+         <widget class="QLineEdit" name="num_trials_input"/>
+        </item>
+        <item row="4" column="1">
+         <widget class="QLineEdit" name="num_samples_min_input"/>
+        </item>
+        <item row="3" column="1">
+         <widget class="QLabel" name="num_samples_min_label">
+          <property name="text">
+           <string># Samples Min</string>
+          </property>
+          <property name="buddy">
+           <cstring>num_samples_min_input</cstring>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="3">
+         <widget class="QLabel" name="num_samples_step_label">
+          <property name="text">
+           <string># Samples Step</string>
+          </property>
+          <property name="buddy">
+           <cstring>num_samples_step_input</cstring>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="3">
+         <widget class="QLineEdit" name="num_samples_step_input"/>
+        </item>
+        <item row="3" column="0">
+         <widget class="QLabel" name="num_trials_label">
+          <property name="text">
+           <string>Number of Trials:</string>
+          </property>
+          <property name="buddy">
+           <cstring>num_trials_input</cstring>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="4">
+         <widget class="QPushButton" name="run_experiment_button">
+          <property name="text">
+           <string>Run Experiment</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="4">
+         <layout class="QGridLayout" name="exp_controls">
+          <item row="1" column="0">
+           <layout class="QVBoxLayout" name="error_controls">
+            <item>
+             <widget class="QGroupBox" name="groupBox">
+              <property name="title">
+               <string>Error Metrics</string>
+              </property>
+              <layout class="QVBoxLayout" name="verticalLayout_3">
+               <item>
+                <widget class="QCheckBox" name="prediction_mse_checkbox">
+                 <property name="text">
+                  <string>Prediction MSE</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QCheckBox" name="matthews_coef_checkbox">
+                 <property name="text">
+                  <string>Matthew's Coefficient</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item row="0" column="0">
+           <layout class="QVBoxLayout" name="var_subset_controls">
+            <item>
+             <widget class="QGroupBox" name="selection_methods_group">
+              <property name="title">
+               <string>Selection Methods</string>
+              </property>
+              <layout class="QVBoxLayout" name="verticalLayout">
+               <item>
+                <widget class="QCheckBox" name="lasso_cv_checkbox">
+                 <property name="text">
+                  <string>LassoCV</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QCheckBox" name="lasso_cv_std_checkbox">
+                 <property name="text">
+                  <string>Lasso CV + 1 Std. Dev</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QCheckBox" name="lasso_bic_checkbox">
+                 <property name="text">
+                  <string>Lasso BIC</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item>
+             <widget class="QGroupBox" name="graphics_metrics_group">
+              <property name="title">
+               <string>Subset Metrics</string>
+              </property>
+              <layout class="QVBoxLayout" name="verticalLayout_2">
+               <item>
+                <widget class="QCheckBox" name="perfectly_chosen_checkbox">
+                 <property name="text">
+                  <string>% Perfectly Chosen</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QCheckBox" name="predictors_missed_checkbox">
+                 <property name="text">
+                  <string># Predictors Missed</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QCheckBox" name="false_predictors_checkbox">
+                 <property name="text">
+                  <string># False Predictors</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QCheckBox" name="symm_diff_checkbox">
+                 <property name="text">
+                  <string>Mean Symmetric Diff.</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </item>
+        <item row="0" column="0" colspan="4">
+         <widget class="QScrollArea" name="exp_graph_scroll">
+          <property name="widgetResizable">
+           <bool>true</bool>
+          </property>
+          <widget class="QWidget" name="scrollAreaWidgetContents">
+           <property name="geometry">
+            <rect>
+             <x>0</x>
+             <y>0</y>
+             <width>743</width>
+             <height>1401</height>
+            </rect>
+           </property>
+           <layout class="QGridLayout" name="gridLayout_4">
+            <item row="1" column="0">
+             <widget class="QGraphicsView" name="variable_subset_graph">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>400</height>
+               </size>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="0">
+             <widget class="QGraphicsView" name="error_graph">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>400</height>
+               </size>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="0">
+             <widget class="QLabel" name="error_graph_label">
+              <property name="text">
+               <string>Error Graph</string>
+              </property>
+              <property name="buddy">
+               <cstring>error_graph</cstring>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="0">
+             <widget class="QLabel" name="var_subset_graph_label">
+              <property name="text">
+               <string>Variable Subset Graph</string>
+              </property>
+              <property name="buddy">
+               <cstring>variable_subset_graph</cstring>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>984</width>
+     <height>26</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuFile">
+    <property name="title">
+     <string>File</string>
+    </property>
+    <addaction name="actionNew"/>
+    <addaction name="actionOpen"/>
+    <addaction name="actionSave"/>
+    <addaction name="actionSave_As"/>
+    <addaction name="separator"/>
+    <addaction name="actionExit"/>
+   </widget>
+   <addaction name="menuFile"/>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <action name="actionNew">
+   <property name="text">
+    <string>New</string>
+   </property>
+  </action>
+  <action name="actionOpen">
+   <property name="text">
+    <string>Open</string>
+   </property>
+  </action>
+  <action name="actionSave">
+   <property name="text">
+    <string>Save</string>
+   </property>
+  </action>
+  <action name="actionSave_As">
+   <property name="text">
+    <string>Save As</string>
+   </property>
+  </action>
+  <action name="actionExit">
+   <property name="text">
+    <string>Exit</string>
+   </property>
+  </action>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>DistributionsList</class>
+   <extends>QListView</extends>
+   <header>components</header>
+   <slots>
+    <signal>rowAdded()</signal>
+    <slot>add_variable()</slot>
+   </slots>
+  </customwidget>
+  <customwidget>
+   <class>CorrelationsTable</class>
+   <extends>QTableView</extends>
+   <header>components</header>
+   <slots>
+    <slot>update_variables()</slot>
+   </slots>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>add_var_button</sender>
+   <signal>clicked()</signal>
+   <receiver>distributions_list</receiver>
+   <slot>add_variable()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>236</x>
+     <y>807</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>234</x>
+     <y>559</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>distributions_list</sender>
+   <signal>rowAdded()</signal>
+   <receiver>correlations_table</receiver>
+   <slot>update_variables()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>187</x>
+     <y>636</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>225</x>
+     <y>973</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>
