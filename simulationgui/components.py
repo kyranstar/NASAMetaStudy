@@ -30,6 +30,20 @@ class DistributionsList(QListWidget):
         num_items = self.model().rowCount()
         return [self.itemWidget(self.item(i)).name_input.text() for i in range(num_items)]
 
+    def get_means(self):
+        """
+        Returns a list of the means of the variables stored in the distributions list.
+        """
+        num_items = self.model().rowCount()
+        return [float(self.itemWidget(self.item(i)).mean_input.text()) for i in range(num_items)]
+
+    def get_variances(self):
+        """
+        Returns a list of the means of the variables stored in the distributions list.
+        """
+        num_items = self.model().rowCount()
+        return [float(self.itemWidget(self.item(i)).variance_input.text()) for i in range(num_items)]
+
     def add_variable(self, name=None):
         item = QListWidgetItem(self)
         child_item = DistListItem()
@@ -70,7 +84,7 @@ class DistributionsList(QListWidget):
     def upload_file(self):
         filename = QFileDialog.getOpenFileName(self, 'Open File', '.')
         filename = filename[0]
-        self.data_file = pd.DataFrame.from_csv(filename)
+        self.data_file = pd.read_csv(filename)
 
         current_row_names = self.get_names()
 
@@ -198,6 +212,9 @@ class CorrelationsTable(QTableView):
         while not isinstance(curr_ob, Ui_MainWindow) and not curr_ob is None:
             curr_ob = curr_ob.parentWidget()
         return curr_ob
+
+    def get_table(self):
+        return self.model()._df
 
     def refresh_heatmap(self):
         pass

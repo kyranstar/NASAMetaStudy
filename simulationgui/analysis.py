@@ -5,7 +5,8 @@ from sklearn.linear_model import Lasso
 from sklearn.linear_model import LassoLarsIC
 from sklearn.metrics import mean_squared_error
 from sklearn.model_selection import train_test_split
-from .datasampling import get_distribution_samples
+from datasampling import get_distribution_samples
+from math import *
 
 
 def select_variables(model):
@@ -39,7 +40,7 @@ def lasso_mse(data, test_data, alphas=np.arange(0.05, 1.0, 0.05), stddev=0):
         stddev:
     """
     def mse_prediction(alpha, trainx, trainy, testx, testy):
-        #model.fit(predictors, data[['y']])
+        # model.fit(predictors, data[['y']])
             # create and train model in cv
         model = Lasso(alpha=alpha)
         model.fit(trainx, trainy)
@@ -49,7 +50,7 @@ def lasso_mse(data, test_data, alphas=np.arange(0.05, 1.0, 0.05), stddev=0):
     trainy = data[['y']]
     testx = test_data.drop(['y'], axis=1)
     testy = test_data[['y']]
-    #print(list(map(lambda a: mse_prediction(a), alphas)))
+    # print(list(map(lambda a: mse_prediction(a), alphas)))
     if stddev == 0:
         return min(alphas, key=lambda alpha: mse_prediction(alpha, trainx, trainy, testx, testy))
     scores = np.array([mse_prediction(a, trainx, trainy, testx, testy) for a in alphas])
@@ -73,7 +74,7 @@ def lasso_cv_mse(data, cv=10, alphas=np.arange(0.01, 1.0, 0.05), stddev=0):
     from just selecting the minimum prediction score.
     """
     def mse_prediction(alpha, data):
-        #model.fit(predictors, data[['y']])
+        # model.fit(predictors, data[['y']])
         score = 0.0
         for _ in range(cv):
             # create and train model in cv
@@ -124,7 +125,7 @@ def lasso_bic(data):
     return model
 
 
-def worker_func(method, true_model, actual_data, trials, num_samples, true_variables):
+def worker_func(method, true_model_text, data_model, trials, num_samples, true_variables):
 
     model_generator = SUBSET_FUNCS[method]
     sum_sq_err = 0.0
@@ -137,7 +138,7 @@ def worker_func(method, true_model, actual_data, trials, num_samples, true_varia
 
     for trialnum in range(trials):
         print(trialnum)
-        sampled_data = get_distribution_samples(actual_data, num_samples, true_model)
+        sampled_data = get_distribution_samples(data_model, num_samples, true_model_text)
 
         model = model_generator(sampled_data)
 
@@ -155,7 +156,7 @@ def worker_func(method, true_model, actual_data, trials, num_samples, true_varia
         if symm_diff <= 2:
             num_symm_diff_2 += 1
         ave_symm_diff += symm_diff
-        test_data = get_distribution_samples(actual_data, 1, true_model)
+        test_data = get_distribution_samples(data_model, 1, true_model_text)
         sum_sq_err += (test_data.loc[0, 'y'] - model.predict(test_data.drop(["y"], axis=1))[0])**2
 
     print("With %d samples:" % num_samples)
@@ -176,7 +177,7 @@ def worker_func(method, true_model, actual_data, trials, num_samples, true_varia
             sum_sq_err/trials)
 
 
-def subset_accuracy(df, sample_range, trials, subset_metrics, subset_methods, error_types):
+def subset_accuracy(variables, data_model, true_model_text, sample_range, trials, subset_metrics, subset_methods, error_types):
     """
     Plots various metrics of how accurately lasso can select the true variables
     given certain numbers of samples.
@@ -185,11 +186,7 @@ def subset_accuracy(df, sample_range, trials, subset_metrics, subset_methods, er
         sample_range: A list of numbers of samples to try (x-axis values)
         trials: The number of trials to do for each sample size
     """
-    true_model = Lasso(alpha=.5)
-    true_model.fit(df.drop(["y"], axis=1), df[['y']])
-    true_variables = select_variables(true_model)
-    print(true_model.coef_)
-    print(true_model.intercept_)
+    true_variables = set([v for v in variables if v in true_model_text])
 
     output_data = pd.DataFrame({'sample_size': sample_range})
 
@@ -205,7 +202,7 @@ def subset_accuracy(df, sample_range, trials, subset_metrics, subset_methods, er
         arr_ave_symm_diff = []
         mse = []
 
-        processes = [pool.apply_async(worker_func, (method, true_model, df,
+        processes = [pool.apply_async(worker_func, (method, true_model_text, data_model,
                                                     trials, num_samples, true_variables)) for num_samples in sample_range]
 
         for (num_samples,

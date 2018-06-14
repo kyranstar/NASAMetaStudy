@@ -17,10 +17,8 @@ TODO:
 			- Calculate distribution attributes (mean, variance, covariance)
 		- Data imputation?
 		- Change parametric distribution of data
-		- True model
 		- Connect data tab and experiment tab
-		- Make certain columns of table uneditable (not implemented in Dash yet)
-			- Only use diagonal of correlations table
+		- Sync two halves of correlation table
 		- Fix upload data handling... Currently uses timestamp of button click for callback
 	- Debounce run button
 	- Live update graph?
