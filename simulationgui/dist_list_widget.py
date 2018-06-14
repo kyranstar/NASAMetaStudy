@@ -11,7 +11,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_DistListItem(object):
     def setupUi(self, DistListItem):
         DistListItem.setObjectName("DistListItem")
-        DistListItem.resize(510, 300)
+        DistListItem.resize(516, 300)
         self.horizontalLayout = QtWidgets.QHBoxLayout(DistListItem)
         self.horizontalLayout.setObjectName("horizontalLayout")
         self.name_input = QtWidgets.QLineEdit(DistListItem)
@@ -34,9 +34,9 @@ class Ui_DistListItem(object):
         self.mean_input = QtWidgets.QLineEdit(DistListItem)
         self.mean_input.setObjectName("mean_input")
         self.horizontalLayout.addWidget(self.mean_input)
-        self.pushButton = QtWidgets.QPushButton(DistListItem)
-        self.pushButton.setObjectName("pushButton")
-        self.horizontalLayout.addWidget(self.pushButton)
+        self.delete_button = QtWidgets.QPushButton(DistListItem)
+        self.delete_button.setObjectName("delete_button")
+        self.horizontalLayout.addWidget(self.delete_button)
         self.variance_label.setBuddy(self.variance_input)
         self.mean_label.setBuddy(self.mean_input)
 
@@ -53,5 +53,5 @@ class Ui_DistListItem(object):
         self.variance_input.setText(_translate("DistListItem", "0.0"))
         self.mean_label.setText(_translate("DistListItem", "Mean:"))
         self.mean_input.setText(_translate("DistListItem", "0.0"))
-        self.pushButton.setText(_translate("DistListItem", "Delete"))
+        self.delete_button.setText(_translate("DistListItem", "Delete"))
 

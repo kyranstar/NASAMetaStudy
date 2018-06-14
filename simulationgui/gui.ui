@@ -52,16 +52,6 @@
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_2">
-            <item row="2" column="0" colspan="2">
-             <widget class="DistributionsList" name="distributions_list"/>
-            </item>
-            <item row="0" column="0" colspan="3">
-             <widget class="QPushButton" name="upload_button">
-              <property name="text">
-               <string>Upload Data</string>
-              </property>
-             </widget>
-            </item>
             <item row="1" column="0">
              <widget class="QLabel" name="distributions_label">
               <property name="text">
@@ -82,14 +72,10 @@
               </property>
              </widget>
             </item>
-            <item row="4" column="0">
-             <widget class="QLabel" name="correlations_label">
-              <property name="text">
-               <string>Correlations</string>
-              </property>
-             </widget>
+            <item row="2" column="0" colspan="2">
+             <widget class="DistributionsList" name="distributions_list"/>
             </item>
-            <item row="2" column="2" rowspan="4">
+            <item row="2" column="2" rowspan="5">
              <widget class="QTextEdit" name="true_model_panel">
               <property name="html">
                <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
@@ -102,6 +88,23 @@ p, li { white-space: pre-wrap; }
               </property>
              </widget>
             </item>
+            <item row="5" column="0">
+             <widget class="QLabel" name="correlations_label">
+              <property name="text">
+               <string>Correlations</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="0" colspan="3">
+             <widget class="QPushButton" name="upload_button">
+              <property name="text">
+               <string>Upload Data</string>
+              </property>
+             </widget>
+            </item>
+            <item row="6" column="0">
+             <widget class="CorrelationsTable" name="correlations_table"/>
+            </item>
             <item row="3" column="0">
              <widget class="QPushButton" name="add_var_button">
               <property name="text">
@@ -109,8 +112,12 @@ p, li { white-space: pre-wrap; }
               </property>
              </widget>
             </item>
-            <item row="5" column="0">
-             <widget class="CorrelationsTable" name="correlations_table"/>
+            <item row="4" column="0">
+             <widget class="QPushButton" name="fit_distributions_button">
+              <property name="text">
+               <string>Fit Distributions</string>
+              </property>
+             </widget>
             </item>
            </layout>
           </widget>
@@ -404,8 +411,10 @@ p, li { white-space: pre-wrap; }
    <extends>QListView</extends>
    <header>components</header>
    <slots>
-    <signal>rowAdded()</signal>
+    <signal>rowsChanged()</signal>
     <slot>add_variable()</slot>
+    <slot>fit_distributions()</slot>
+    <slot>upload_file()</slot>
    </slots>
   </customwidget>
   <customwidget>
@@ -414,6 +423,7 @@ p, li { white-space: pre-wrap; }
    <header>components</header>
    <slots>
     <slot>update_variables()</slot>
+    <slot>fit_distributions()</slot>
    </slots>
   </customwidget>
  </customwidgets>
@@ -436,18 +446,66 @@ p, li { white-space: pre-wrap; }
    </hints>
   </connection>
   <connection>
+   <sender>fit_distributions_button</sender>
+   <signal>clicked()</signal>
+   <receiver>distributions_list</receiver>
+   <slot>fit_distributions()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>169</x>
+     <y>842</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>174</x>
+     <y>644</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>fit_distributions_button</sender>
+   <signal>clicked()</signal>
+   <receiver>correlations_table</receiver>
+   <slot>fit_distributions()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>212</x>
+     <y>850</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>197</x>
+     <y>962</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>upload_button</sender>
+   <signal>clicked()</signal>
+   <receiver>distributions_list</receiver>
+   <slot>upload_file()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>281</x>
+     <y>111</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>192</x>
+     <y>304</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
    <sender>distributions_list</sender>
-   <signal>rowAdded()</signal>
+   <signal>rowsChanged()</signal>
    <receiver>correlations_table</receiver>
    <slot>update_variables()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>166</x>
-     <y>694</y>
+     <x>134</x>
+     <y>754</y>
     </hint>
     <hint type="destinationlabel">
-     <x>119</x>
-     <y>972</y>
+     <x>135</x>
+     <y>1019</y>
     </hint>
    </hints>
   </connection>
