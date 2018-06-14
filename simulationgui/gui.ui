@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>984</width>
+    <width>628</width>
     <height>1585</height>
    </rect>
   </property>
@@ -30,7 +30,7 @@
        <attribute name="title">
         <string>Data</string>
        </attribute>
-       <layout class="QGridLayout" name="gridLayout" rowstretch="0" columnstretch="0,0">
+       <layout class="QGridLayout" name="gridLayout" rowstretch="0" columnstretch="0">
         <item row="0" column="0">
          <widget class="QScrollArea" name="datatab_scroll">
           <property name="minimumSize">
@@ -47,14 +47,11 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>932</width>
+             <width>576</width>
              <height>1459</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_2">
-            <item row="5" column="0">
-             <widget class="CorrelationsTable" name="correlations_table"/>
-            </item>
             <item row="2" column="0" colspan="2">
              <widget class="DistributionsList" name="distributions_list"/>
             </item>
@@ -90,9 +87,6 @@
               <property name="text">
                <string>Correlations</string>
               </property>
-              <property name="buddy">
-               <cstring>correlations_table</cstring>
-              </property>
              </widget>
             </item>
             <item row="2" column="2" rowspan="4">
@@ -114,6 +108,9 @@ p, li { white-space: pre-wrap; }
                <string>Add Variable</string>
               </property>
              </widget>
+            </item>
+            <item row="5" column="0">
+             <widget class="CorrelationsTable" name="correlations_table"/>
             </item>
            </layout>
           </widget>
@@ -297,7 +294,7 @@ p, li { white-space: pre-wrap; }
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>743</width>
+             <width>387</width>
              <height>1401</height>
             </rect>
            </property>
@@ -357,7 +354,7 @@ p, li { white-space: pre-wrap; }
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>984</width>
+     <width>628</width>
      <height>26</height>
     </rect>
    </property>
@@ -445,12 +442,12 @@ p, li { white-space: pre-wrap; }
    <slot>update_variables()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>187</x>
-     <y>636</y>
+     <x>166</x>
+     <y>694</y>
     </hint>
     <hint type="destinationlabel">
-     <x>225</x>
-     <y>973</y>
+     <x>119</x>
+     <y>972</y>
     </hint>
    </hints>
   </connection>
