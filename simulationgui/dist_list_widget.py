@@ -48,7 +48,7 @@ class Ui_DistListItem(object):
         DistListItem.setWindowTitle(_translate("DistListItem", "Form"))
         self.name_input.setText(_translate("DistListItem", "Name"))
         self.type_combo.setItemText(0, _translate("DistListItem", "Normal"))
-        self.type_combo.setItemText(1, _translate("DistListItem", "Bernoulli"))
+        self.type_combo.setItemText(1, _translate("DistListItem", "Categorical"))
         self.variance_label.setText(_translate("DistListItem", "Variance:"))
         self.variance_input.setText(_translate("DistListItem", "0.0"))
         self.mean_label.setText(_translate("DistListItem", "Mean:"))

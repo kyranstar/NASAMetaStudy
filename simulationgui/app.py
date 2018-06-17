@@ -3,22 +3,32 @@ import analysis
 import datasampling
 from gen_ui import Ui_MainWindow
 from PyQt5.QtWidgets import QMainWindow, QApplication
+from PyQt5.QtCore import pyqtSignal
 from sklearn.linear_model import Lasso
 import numpy as np
 
 
 class MyMainWindow(QMainWindow, Ui_MainWindow):
+
+    analysisDataUpdated = pyqtSignal()
+
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setupUi(self)
+        self.subset_metrics = []
+        self.subset_methods = []
+        self.error_types = []
+        self.sample_range = []
         self.run_experiment_button.clicked.connect(self.run_experiment)
         self.fit_true_model_button.clicked.connect(self.fit_true_model)
+        self.analysisDataUpdated.connect(self.variable_subset_graph.plot_var_subset)
+        self.analysisDataUpdated.connect(self.error_graph.plot_error)
 
     def fit_true_model(self):
         df = self.distributions_list.data_file
+        # TODO make this customizable
         true_model = Lasso(alpha=.5)
         true_model.fit(df.drop(["y"], axis=1), df[['y']])
-        print(true_model.coef_)
 
         var_names = self.distributions_list.get_names()
         coef = list(np.array(true_model.coef_).flat)
@@ -65,12 +75,17 @@ class MyMainWindow(QMainWindow, Ui_MainWindow):
         true_model_text = self.true_model_panel.toPlainText()
         variables = self.distributions_list.get_names()
 
+        self.sample_range = sample_range
+        self.subset_metrics = subset_metrics
+        self.subset_methods = subset_methods
+        self.error_types = error_types
+
         data_model = datasampling.DataModel(
             self.distributions_list.get_means(), self.correlations_table.get_table(), self.distributions_list.get_names())
-        output_data = analysis.subset_accuracy(
+        self.analysis_data = analysis.subset_accuracy(
             variables, data_model, true_model_text, sample_range, trials, subset_metrics, subset_methods, error_types)
-        print(output_data)
-        # TODO plot
+        # TODO update graph as data collected
+        self.analysisDataUpdated.emit()
 
 
 if __name__ == "__main__":

@@ -4,6 +4,14 @@ import numpy as np
 from sklearn.linear_model import Lasso
 import scipy.stats as stats
 import pandas as pd
+from gen_ui import Ui_MainWindow
+
+
+def get_super_parent(ob):
+    curr_ob = ob.parentWidget()
+    while not isinstance(curr_ob, Ui_MainWindow) and not curr_ob is None:
+        curr_ob = curr_ob.parentWidget()
+    return curr_ob
 
 
 def plot_lasso(data, alphas=np.arange(0.01, 1.0, 0.01)):

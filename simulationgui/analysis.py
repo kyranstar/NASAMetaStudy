@@ -186,7 +186,7 @@ def subset_accuracy(variables, data_model, true_model_text, sample_range, trials
         sample_range: A list of numbers of samples to try (x-axis values)
         trials: The number of trials to do for each sample size
     """
-    true_variables = set([v for v in variables if v in true_model_text])
+    true_variables = set([i+1 for i, v in enumerate(variables) if v in true_model_text])
 
     output_data = pd.DataFrame({'sample_size': sample_range})
 

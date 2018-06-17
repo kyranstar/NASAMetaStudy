@@ -30,7 +30,7 @@
      </item>
      <item>
       <property name="text">
-       <string>Bernoulli</string>
+       <string>Categorical</string>
       </property>
      </item>
     </widget>

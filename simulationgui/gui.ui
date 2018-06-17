@@ -355,7 +355,7 @@ p, li { white-space: pre-wrap; }
            </property>
            <layout class="QGridLayout" name="gridLayout_4">
             <item row="1" column="0">
-             <widget class="QGraphicsView" name="variable_subset_graph">
+             <widget class="GraphWidget" name="variable_subset_graph">
               <property name="minimumSize">
                <size>
                 <width>0</width>
@@ -365,7 +365,7 @@ p, li { white-space: pre-wrap; }
              </widget>
             </item>
             <item row="3" column="0">
-             <widget class="QGraphicsView" name="error_graph">
+             <widget class="GraphWidget" name="error_graph">
               <property name="minimumSize">
                <size>
                 <width>0</width>
@@ -474,6 +474,11 @@ p, li { white-space: pre-wrap; }
     <slot>fit_distributions()</slot>
    </slots>
   </customwidget>
+  <customwidget>
+   <class>GraphWidget</class>
+   <extends>QGraphicsView</extends>
+   <header>components</header>
+  </customwidget>
  </customwidgets>
  <resources/>
  <connections>
@@ -485,7 +490,7 @@ p, li { white-space: pre-wrap; }
    <hints>
     <hint type="sourcelabel">
      <x>236</x>
-     <y>807</y>
+     <y>1254</y>
     </hint>
     <hint type="destinationlabel">
      <x>234</x>
@@ -501,7 +506,7 @@ p, li { white-space: pre-wrap; }
    <hints>
     <hint type="sourcelabel">
      <x>169</x>
-     <y>842</y>
+     <y>1289</y>
     </hint>
     <hint type="destinationlabel">
      <x>174</x>
@@ -517,11 +522,11 @@ p, li { white-space: pre-wrap; }
    <hints>
     <hint type="sourcelabel">
      <x>212</x>
-     <y>850</y>
+     <y>1297</y>
     </hint>
     <hint type="destinationlabel">
      <x>197</x>
-     <y>962</y>
+     <y>1409</y>
     </hint>
    </hints>
   </connection>
@@ -553,7 +558,7 @@ p, li { white-space: pre-wrap; }
     </hint>
     <hint type="destinationlabel">
      <x>135</x>
-     <y>1019</y>
+     <y>1466</y>
     </hint>
    </hints>
   </connection>

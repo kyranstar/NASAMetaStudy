@@ -168,11 +168,11 @@ class Ui_MainWindow(object):
         self.scrollAreaWidgetContents.setObjectName("scrollAreaWidgetContents")
         self.gridLayout_4 = QtWidgets.QGridLayout(self.scrollAreaWidgetContents)
         self.gridLayout_4.setObjectName("gridLayout_4")
-        self.variable_subset_graph = QtWidgets.QGraphicsView(self.scrollAreaWidgetContents)
+        self.variable_subset_graph = GraphWidget(self.scrollAreaWidgetContents)
         self.variable_subset_graph.setMinimumSize(QtCore.QSize(0, 400))
         self.variable_subset_graph.setObjectName("variable_subset_graph")
         self.gridLayout_4.addWidget(self.variable_subset_graph, 1, 0, 1, 1)
-        self.error_graph = QtWidgets.QGraphicsView(self.scrollAreaWidgetContents)
+        self.error_graph = GraphWidget(self.scrollAreaWidgetContents)
         self.error_graph.setMinimumSize(QtCore.QSize(0, 400))
         self.error_graph.setObjectName("error_graph")
         self.gridLayout_4.addWidget(self.error_graph, 3, 0, 1, 1)
@@ -223,7 +223,7 @@ class Ui_MainWindow(object):
         self.var_subset_graph_label.setBuddy(self.variable_subset_graph)
 
         self.retranslateUi(MainWindow)
-        self.tab_panel.setCurrentIndex(0)
+        self.tab_panel.setCurrentIndex(1)
         self.add_var_button.clicked.connect(self.distributions_list.add_variable)
         self.fit_distributions_button.clicked.connect(self.distributions_list.fit_distributions)
         self.fit_distributions_button.clicked.connect(self.correlations_table.fit_distributions)
@@ -281,4 +281,4 @@ class Ui_MainWindow(object):
         self.actionSave_As.setText(_translate("MainWindow", "Save As"))
         self.actionExit.setText(_translate("MainWindow", "Exit"))
 
-from components import CorrelationsTable, DistributionsList
+from components import CorrelationsTable, DistributionsList, GraphWidget

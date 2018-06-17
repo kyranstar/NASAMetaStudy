@@ -6,6 +6,8 @@ from gen_ui import Ui_MainWindow
 import pandas as pd
 import matplotlib
 from matplotlib import pyplot as plt
+from utility import get_super_parent
+import pyqtgraph as pg
 
 
 class DistListItem(QWidget, Ui_DistListItem):
@@ -52,7 +54,7 @@ class DistributionsList(QListWidget):
 
         # Whenever a variable name is edited, we update the correlation table
         child_item.name_input.editingFinished.connect(
-            lambda: self._get_super_parent().correlations_table.update_variables(self.get_names()))
+            lambda: get_super_parent(self).correlations_table.update_variables(self.get_names()))
         # Delete button should delete row
         # TODO fix this, kinda hacky solution
         child_item.delete_button.clicked.connect(
@@ -76,8 +78,6 @@ class DistributionsList(QListWidget):
         variance = self.data_file.var(axis=0)
         num_items = self.model().rowCount()
         for i, widget in [(i, self.itemWidget(self.item(i))) for i in range(num_items)]:
-            print(means)
-            print(i)
             widget.mean_input.setText(str(means[i]))
             widget.variance_input.setText(str(variance[i]))
 
@@ -90,12 +90,6 @@ class DistributionsList(QListWidget):
 
         for new_var in [col for col in self.data_file.columns if not col in current_row_names]:
             self.add_variable(name=new_var)
-
-    def _get_super_parent(self):
-        curr_ob = self.parentWidget()
-        while not isinstance(curr_ob, Ui_MainWindow) and not curr_ob is None:
-            curr_ob = curr_ob.parentWidget()
-        return curr_ob
 
 
 class CorrelationModel(QAbstractTableModel):
@@ -201,17 +195,11 @@ class CorrelationsTable(QTableView):
         self.model().sort_by(names)
 
     def fit_distributions(self):
-        data_file = self._get_super_parent().distributions_list.data_file
+        data_file = get_super_parent(self).distributions_list.data_file
         if data_file is None:
             return
-        cov = data_file.corr()
+        cov = data_file.corr().loc[self.model()._df.columns, self.model()._df.columns]
         self.model().set_dataframe(cov)
-
-    def _get_super_parent(self):
-        curr_ob = self.parentWidget()
-        while not isinstance(curr_ob, Ui_MainWindow) and not curr_ob is None:
-            curr_ob = curr_ob.parentWidget()
-        return curr_ob
 
     def get_table(self):
         return self.model()._df
@@ -224,3 +212,50 @@ class CorrelationsTable(QTableView):
         # for j in range(self.model().rowCount()):
         #self.item(i, j).setBackground(QColor(100, 100, 150))
         #self.model().setData(self.model().index(i, j), QBrush(Qt.red), Qt.BackgroundColorRole)
+
+
+class GraphWidget(pg.PlotWidget):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.legend = None
+
+    def plot_var_subset(self):
+        parent_widget = get_super_parent(self)
+        analysis_data = parent_widget.analysis_data
+        subset_methods = parent_widget.subset_methods
+        subset_metrics = parent_widget.subset_metrics
+        sample_range = parent_widget.sample_range
+        self.clear()
+        self.setLabel('left', '%')
+        self.setLabel('bottom', 'number of samples')
+        self.setYRange(0, 100)
+        self.setXRange(sample_range[0], sample_range[-1])
+        if analysis_data is None:
+            return
+        # Delete legend if it exists, and create a new one
+        if self.legend:
+            self.legend.scene().removeItem(self.legend)
+        self.legend = self.addLegend()
+
+        i = 0
+        for subset_method in subset_methods:
+            for subset_metric in subset_metrics:
+                key = (subset_method, subset_metric)
+                #curve = self.plot()
+                # curve.setData(sample_range, analysis_data[key].tolist(
+                # ), name="%s: %s" % key, pen=(i, len(subset_methods)*len(subset_metrics)))
+                #i += 1
+                print(sample_range)
+                print(analysis_data[key].tolist())
+                item = pg.PlotCurveItem(
+                    x=list(sample_range), y=analysis_data[key].values, name="%s: %s" % key, pen=(i, len(subset_methods)*len(subset_metrics)))
+                self.addItem(item)
+                i += 1
+        self.repaint()
+
+    def plot_error(self):
+        parent_widget = get_super_parent(self)
+        analysis_data = parent_widget.analysis_data
+        error_types = parent_widget.error_types
+        if analysis_data is None:
+            return

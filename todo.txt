@@ -11,21 +11,15 @@ Ways to find optimal lasso parameter:
 	- VISA
 
 TODO:
-	- Implement data tab
-		- Import data
-			- Allow input of distribution of data
-			- Calculate distribution attributes (mean, variance, covariance)
-		- Data imputation?
-		- Change parametric distribution of data
-		- Connect data tab and experiment tab
-		- Sync two halves of correlation table
-		- Fix upload data handling... Currently uses timestamp of button click for callback
-	- Debounce run button
+	- Data imputation?
+	- Allow different parametric distributions of data
+	- Generation of categorical data
+ 	- Sync two halves of correlation table
+	- Heatmap correlation table
 	- Live update graph?
 	- Error messages
-		-http://xeodou.github.io/react-crouton/
 	- Clean up code with variable selection and error, make more general
-	- More obvious "computing" screen
+	- Possibly print computation as it works
 	- Parallelization on trial
 	- More options for variable selection
 	- More options for residual display
