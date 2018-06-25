@@ -223,7 +223,7 @@ class Ui_MainWindow(object):
         self.var_subset_graph_label.setBuddy(self.variable_subset_graph)
 
         self.retranslateUi(MainWindow)
-        self.tab_panel.setCurrentIndex(1)
+        self.tab_panel.setCurrentIndex(0)
         self.add_var_button.clicked.connect(self.distributions_list.add_variable)
         self.fit_distributions_button.clicked.connect(self.distributions_list.fit_distributions)
         self.fit_distributions_button.clicked.connect(self.correlations_table.fit_distributions)
@@ -249,7 +249,7 @@ class Ui_MainWindow(object):
         self.groupBox_2.setTitle(_translate("MainWindow", "True Model Fitting"))
         self.lasso_cv_true_model.setText(_translate("MainWindow", "Lasso CV"))
         self.fit_true_model_button.setText(_translate("MainWindow", "Fit True Model"))
-        self.tab_panel.setTabText(self.tab_panel.indexOf(self.datatab), _translate("MainWindow", "Data"))
+        self.tab_panel.setTabText(self.tab_panel.indexOf(self.datatab), _translate("MainWindow", "Data Simulation"))
         self.num_samples_max_label.setText(_translate("MainWindow", "# Samples Max"))
         self.num_samples_max_input.setText(_translate("MainWindow", "50"))
         self.num_trials_input.setText(_translate("MainWindow", "50"))

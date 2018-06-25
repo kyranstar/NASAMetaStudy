@@ -1,3 +1,5 @@
 data.csv
+real_data.csv
+mice_real_data.csv
 __pycache__/
 .pylintrc

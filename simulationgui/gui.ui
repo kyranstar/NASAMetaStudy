@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>952</width>
+    <width>764</width>
     <height>1585</height>
    </rect>
   </property>
@@ -28,7 +28,7 @@
       </property>
       <widget class="QWidget" name="datatab">
        <attribute name="title">
-        <string>Data</string>
+        <string>Data Simulation</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout" rowstretch="0" columnstretch="0">
         <item row="0" column="0">
@@ -47,7 +47,7 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>900</width>
+             <width>712</width>
              <height>1459</height>
             </rect>
            </property>
@@ -349,7 +349,7 @@ p, li { white-space: pre-wrap; }
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>711</width>
+             <width>523</width>
              <height>1401</height>
             </rect>
            </property>
@@ -409,7 +409,7 @@ p, li { white-space: pre-wrap; }
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>952</width>
+     <width>764</width>
      <height>26</height>
     </rect>
    </property>

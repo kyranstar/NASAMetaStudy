@@ -12,6 +12,7 @@ Ways to find optimal lasso parameter:
 
 TODO:
 	- Data imputation?
+	- Store true model funcs better
 	- Allow different parametric distributions of data
 	- Generation of categorical data
  	- Sync two halves of correlation table
