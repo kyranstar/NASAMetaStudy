@@ -6,8 +6,9 @@ from gen_ui import Ui_MainWindow
 import pandas as pd
 import matplotlib
 from matplotlib import pyplot as plt
-from utility import get_super_parent
+from utility import get_super_parent, error
 import pyqtgraph as pg
+from pandas.api.types import is_string_dtype
 
 
 class DistListItem(QWidget, Ui_DistListItem):
@@ -46,12 +47,13 @@ class DistributionsList(QListWidget):
         num_items = self.model().rowCount()
         return [float(self.itemWidget(self.item(i)).variance_input.text()) for i in range(num_items)]
 
-    def add_variable(self, name=None):
+    def add_variable(self, name=None, distribution="Normal"):
         item = QListWidgetItem(self)
         child_item = DistListItem()
         if name:
             child_item.name_input.setText(name)
-
+        if distribution:
+            child_item.type_combo.setCurrentIndex(child_item.type_combo.findText(distribution))
         # Whenever a variable name is edited, we update the correlation table
         child_item.name_input.editingFinished.connect(
             lambda: get_super_parent(self).correlations_table.update_variables(self.get_names()))
@@ -71,25 +73,33 @@ class DistributionsList(QListWidget):
 
     def fit_distributions(self):
         if self.data_file is None:
-            # TODO error message
-            print("NO FILE ERROR")
+            error('No data file specified')
             return
-        means = self.data_file.mean(axis=0)
-        variance = self.data_file.var(axis=0)
         num_items = self.model().rowCount()
         for i, widget in [(i, self.itemWidget(self.item(i))) for i in range(num_items)]:
-            widget.mean_input.setText(str(means[i]))
-            widget.variance_input.setText(str(variance[i]))
+            if widget.type_combo.currentText() == "Normal":
+                widget.mean_input.setText(str(self.data_file.ix[:, i].mean()))
+                widget.variance_input.setText(str(self.data_file.ix[:, i].var()))
 
     def upload_file(self):
         filename = QFileDialog.getOpenFileName(self, 'Open File', '.')
+        if not filename or not filename[0]:
+            return
         filename = filename[0]
         self.data_file = pd.read_csv(filename)
 
         current_row_names = self.get_names()
 
+        dtypes = self.data_file.dtypes
         for new_var in [col for col in self.data_file.columns if not col in current_row_names]:
-            self.add_variable(name=new_var)
+            dist = 'Normal'
+            if is_string_dtype(dtypes[new_var]):
+                dist = 'Categorical'
+
+            self.add_variable(name=new_var, distribution=dist)
+
+        self.fit_distributions()
+        get_super_parent(self).correlations_table.fit_distributions()
 
 
 class CorrelationModel(QAbstractTableModel):

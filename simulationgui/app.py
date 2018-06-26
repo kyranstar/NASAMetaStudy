@@ -6,6 +6,7 @@ from PyQt5.QtWidgets import QMainWindow, QApplication
 from PyQt5.QtCore import pyqtSignal
 from sklearn.linear_model import Lasso
 import numpy as np
+import utility
 
 
 class MyMainWindow(QMainWindow, Ui_MainWindow):
@@ -25,10 +26,16 @@ class MyMainWindow(QMainWindow, Ui_MainWindow):
         self.analysisDataUpdated.connect(self.error_graph.plot_error)
 
     def fit_true_model(self):
+        dependent_var = self.dependent_var_input.text()
         df = self.distributions_list.data_file
+        if not dependent_var in df.columns:
+            utility.error('Dependent variable "%s" is not a variable in the data file' %
+                          dependent_var)
+            return
+
         # TODO make this customizable
         true_model = Lasso(alpha=.5)
-        true_model.fit(df.drop(["y"], axis=1), df[['y']])
+        true_model.fit(df.drop([dependent_var], axis=1), df[[dependent_var]])
 
         var_names = self.distributions_list.get_names()
         coef = list(np.array(true_model.coef_).flat)

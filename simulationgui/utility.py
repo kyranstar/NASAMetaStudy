@@ -5,6 +5,7 @@ from sklearn.linear_model import Lasso
 import scipy.stats as stats
 import pandas as pd
 from gen_ui import Ui_MainWindow
+from PyQt5 import QtWidgets
 
 
 def get_super_parent(ob):
@@ -12,6 +13,12 @@ def get_super_parent(ob):
     while not isinstance(curr_ob, Ui_MainWindow) and not curr_ob is None:
         curr_ob = curr_ob.parentWidget()
     return curr_ob
+
+
+def error(msg):
+    error_dialog = QtWidgets.QErrorMessage()
+    error_dialog.showMessage(msg)
+    error_dialog.exec_()
 
 
 def plot_lasso(data, alphas=np.arange(0.01, 1.0, 0.01)):

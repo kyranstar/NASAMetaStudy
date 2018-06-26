@@ -57,15 +57,15 @@ if __name__ == "__main__":
     df = pd.read_csv('real_data.csv')
     pruned_df = df.drop(['x15', 'x16', 'x17', 'x18'], axis=1)
     data = pruned_df.values
-    print(df)
 
     mice_impute = pd.DataFrame(impy.mice(data.copy()),
                                index=pruned_df.index, columns=pruned_df.columns)
+
+    scatterplot_matrix(pruned_df, mice_impute, pruned_df.columns)
     mice_impute['x15'] = df['x15']
     mice_impute['x16'] = df['x16']
     mice_impute['x17'] = df['x17']
     mice_impute['x18'] = df['x18']
     print(mice_impute)
     mice_impute.to_csv('mice_real_data.csv')
-    scatterplot_matrix(df, mice_impute, df.columns)
     plt.show()
