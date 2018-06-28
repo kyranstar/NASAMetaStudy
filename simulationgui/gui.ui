@@ -530,5 +530,21 @@ p, li { white-space: pre-wrap; }
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>fit_true_model_button</sender>
+   <signal>clicked()</signal>
+   <receiver>distributions_list</receiver>
+   <slot>fit_distributions()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>679</x>
+     <y>1255</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>170</x>
+     <y>1115</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
 </ui>

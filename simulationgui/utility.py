@@ -1,24 +1,46 @@
-import dash_html_components as html
 import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.linear_model import Lasso
 import scipy.stats as stats
 import pandas as pd
-from gen_ui import Ui_MainWindow
 from PyQt5 import QtWidgets
 
 
-def get_super_parent(ob):
-    curr_ob = ob.parentWidget()
-    while not isinstance(curr_ob, Ui_MainWindow) and not curr_ob is None:
-        curr_ob = curr_ob.parentWidget()
-    return curr_ob
+def correlations(df):
+    # TODO fancy correlation estimation method
+    return df.corr()
 
 
 def error(msg):
     error_dialog = QtWidgets.QErrorMessage()
     error_dialog.showMessage(msg)
     error_dialog.exec_()
+
+
+def calculate_dummy(converting_df, categorical_cols, dummy_cols=None):
+    """
+    Converts categorical columns to dummy columns.
+    Arguments:
+        converting_df: The dataframe to convert
+        categorical_cols: The categorical columns in converting_df to convert
+        dummy_cols: The dummy columns to always have in the returned dataframe,
+            even if the values didn't show up in converting_df.
+    """
+    # Dummy encode the new df
+    for categorical_col in categorical_cols:
+        dummies = pd.get_dummies(converting_df[categorical_col]).rename(
+            columns=lambda x: '%s_%s' % (str(categorical_col), str(x)))
+        converting_df = pd.concat([converting_df, dummies], axis=1)
+        converting_df = converting_df.drop([categorical_col], axis=1)
+    if not dummy_cols is None:
+        # Add missing columns where values didn't show
+        missing_cols = set(dummy_cols) - set(converting_df.columns)
+        for c in missing_cols:
+            converting_df[c] = 0
+
+        assert(set(dummy_cols) - set(converting_df.columns) == set())
+
+    return converting_df
 
 
 def plot_lasso(data, alphas=np.arange(0.01, 1.0, 0.01)):
@@ -41,32 +63,3 @@ def plot_normal(h):
     plt.plot(h, fit, '-o')
     plt.hist(h, normed=True)  # use this to draw histogram of your data
     plt.show()  # use may also need add this
-
-
-def dataframe_to_tr(data, editable_cols):
-    """
-    Converts a pandas dataframe to a html table rows.
-    Arguments:
-        data: The dataframe
-        editable_cols: The columns to make editable
-    Returns:
-        A list of html.Tr objects
-    """
-    header_row = [html.Tr([html.Th(col) for col in data.columns])]
-    body = [html.Tr([
-        html.Td(data.iloc[i][col], contentEditable=(col in editable_cols)) for col in data.columns
-    ]) for i in range(len(data))]
-
-    return header_row + body
-
-
-def tr_to_dataframe(rows):
-    rows = list(map(lambda row: [element['props']['children']
-                                 for element in row['props']['children']], rows))
-    print(rows)
-    cols = [th for th in rows[0]]
-    body = [[
-        td for td in row
-    ] for row in rows[1:]]
-
-    return pd.DataFrame(body, columns=cols)

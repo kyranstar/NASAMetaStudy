@@ -24,7 +24,7 @@ def select_variables(model):
     return set([i+1 for i, x in enumerate(coef) if x != 0.0])
 
 
-def lasso_mse(data, test_data, alphas=np.arange(0.05, 1.0, 0.05), stddev=0):
+def lasso_mse(data, dependent_var, test_data, alphas=np.arange(0.05, 1.0, 0.05), stddev=0):
     """
     Attempts to find the best lasso alpha value using generalized prediction mse.
     It first finds the CV MSE prediction scores associated with each alpha value,
@@ -46,10 +46,10 @@ def lasso_mse(data, test_data, alphas=np.arange(0.05, 1.0, 0.05), stddev=0):
         model.fit(trainx, trainy)
         score = mean_squared_error(testy, model.predict(testx))
         return score
-    trainx = data.drop(["y"], axis=1)
-    trainy = data[['y']]
-    testx = test_data.drop(['y'], axis=1)
-    testy = test_data[['y']]
+    trainx = data.drop([dependent_var], axis=1)
+    trainy = data[[dependent_var]]
+    testx = test_data.drop([dependent_var], axis=1)
+    testy = test_data[[dependent_var]]
     # print(list(map(lambda a: mse_prediction(a), alphas)))
     if stddev == 0:
         return min(alphas, key=lambda alpha: mse_prediction(alpha, trainx, trainy, testx, testy))
@@ -60,12 +60,12 @@ def lasso_mse(data, test_data, alphas=np.arange(0.05, 1.0, 0.05), stddev=0):
     best_alpha = np.array([a[0] for a in zip(alphas, scores) if a[1] <= minscore + std]).max()
 
     model = Lasso(alpha=best_alpha)
-    model.fit(data.drop(["y"], axis=1), data[['y']])
+    model.fit(data.drop([dependent_var], axis=1), data[[dependent_var]])
 
     return model
 
 
-def lasso_cv_mse(data, cv=10, alphas=np.arange(0.01, 1.0, 0.05), stddev=0):
+def lasso_cv_mse(data, dependent_var, cv=10, alphas=np.arange(0.01, 1.0, 0.05), stddev=0):
     """
     Attempts to find the best lasso alpha value using generalized prediction mse.
     It first finds the CV MSE prediction scores associated with each alpha value,
@@ -81,12 +81,12 @@ def lasso_cv_mse(data, cv=10, alphas=np.arange(0.01, 1.0, 0.05), stddev=0):
             model = Lasso(alpha=alpha)
             train, test = train_test_split(data, test_size=1.0/cv)
 
-            trainx = train.drop(["y"], axis=1)
-            trainy = train[['y']]
+            trainx = train.drop([dependent_var], axis=1)
+            trainy = train[[dependent_var]]
             model.fit(trainx, trainy)
 
-            testx = test.drop(["y"], axis=1)
-            testy = test[['y']]
+            testx = test.drop([dependent_var], axis=1)
+            testy = test[[dependent_var]]
             score += mean_squared_error(testy, model.predict(testx))
 
         return score/cv
@@ -101,17 +101,17 @@ def lasso_cv_mse(data, cv=10, alphas=np.arange(0.01, 1.0, 0.05), stddev=0):
         best_alpha = np.array([a[0] for a in zip(alphas, scores) if a[1] <= minscore + std]).max()
 
     model = Lasso(alpha=best_alpha)
-    model.fit(data.drop(["y"], axis=1), data[['y']])
+    model.fit(data.drop([dependent_var], axis=1), data[[dependent_var]])
 
     return model
 
 
-def lasso_bic(data):
+def lasso_bic(data, dependent_var):
     """
     Attempts to find the best lasso alpha value fitting a dataset using the BIC
     metric: https://stats.stackexchange.com/questions/126898/tuning-alpha-parameter-in-lasso-linear-model-in-scikitlearn
     """
-    predictors = data.drop(["y"], axis=1)
+    predictors = data.drop([dependent_var], axis=1)
     # def bic_score(predictors, y, model):
     #    sse = sum((model.predict(predictors) - y.values[0])**2)
     #    s = np.count_nonzero(model.coef_)
@@ -121,7 +121,7 @@ def lasso_bic(data):
     #    return math.log(sse/n) + abs(s)*math.log(n)/n*cn
 
     model = LassoLarsIC(criterion='bic')
-    model.fit(predictors, data[['y']])
+    model.fit(predictors, data[[dependent_var]])
     return model
 
 
@@ -137,10 +137,10 @@ def worker_func(method, true_model_text, data_model, trials, num_samples, true_v
     ave_symm_diff = 0.0
 
     for trialnum in range(trials):
-        print(trialnum)
+        print("Trial %d" % trialnum)
         sampled_data = get_distribution_samples(data_model, num_samples, true_model_text)
 
-        model = model_generator(sampled_data)
+        model = model_generator(sampled_data, data_model.dependent_var)
 
         chosen_variables = select_variables(model)
 
@@ -157,7 +157,8 @@ def worker_func(method, true_model_text, data_model, trials, num_samples, true_v
             num_symm_diff_2 += 1
         ave_symm_diff += symm_diff
         test_data = get_distribution_samples(data_model, 1, true_model_text)
-        sum_sq_err += (test_data.loc[0, 'y'] - model.predict(test_data.drop(["y"], axis=1))[0])**2
+        sum_sq_err += (test_data.loc[0, data_model.dependent_var] -
+                       model.predict(test_data.drop([data_model.dependent_var], axis=1))[0])**2
 
     print("With %d samples:" % num_samples)
     print("%0.2f%% trials perfectly chosen" % (num_perfectly_chosen/trials*100))
@@ -234,5 +235,5 @@ def subset_accuracy(variables, data_model, true_model_text, sample_range, trials
 
 
 SUBSET_FUNCS = {'LassoCV': lasso_cv_mse,
-                'LassoCVStd': lambda data: lasso_cv_mse(data, stddev=1.0),
+                'LassoCVStd': lambda data, dependent_var: lasso_cv_mse(data, dependent_var, stddev=1.0),
                 'LassoBIC': lasso_bic, }

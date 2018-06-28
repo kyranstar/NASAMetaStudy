@@ -2,6 +2,7 @@ import importlib
 import random
 import numpy as np
 import pandas as pd
+from utility import calculate_dummy
 
 _math_funcs = ['acos', 'asin', 'atan', 'atan2', 'ceil', 'cos', 'cosh', 'degrees',
                'e', 'exp', 'fabs', 'floor', 'fmod', 'frexp', 'hypot', 'ldexp', 'log',
@@ -18,22 +19,30 @@ allowed_funcs['abs'] = abs
 
 
 class DataModel():
-    def __init__(self, mean, cov, variables):
+    def __init__(self, mean, cov, variables, cat_portions, dummy_cols, dependent_var):
+        """
+        cov: The covariance matrix
+        cat_portions: a map of the categorical values to the
+        percentage of the time they show up.
+        """
         self.num_samples = len(mean)
         self.mean = mean
         self.cov = cov
         self.variables = variables
+        self.cat_portions = cat_portions
+        self.dummy_cols = dummy_cols
+        self.dependent_var = dependent_var
 
 
-def true_model(predictors, true_model_text):
-    result = pd.DataFrame(0, index=np.arange(len(predictors)), columns=['y'])
+def true_model(predictors, dependent_var, true_model_text):
+    result = pd.DataFrame(0, index=np.arange(len(predictors)), columns=[dependent_var])
 
     for i in range(len(predictors)):
         scope = allowed_funcs
         for col in predictors.columns:
             scope[col] = predictors.loc[i, col]
 
-        result.loc[i, 'y'] = eval(true_model_text, {"__builtins__": None}, scope)
+        result.loc[i, dependent_var] = eval(true_model_text, {"__builtins__": None}, scope)
     return result
 
 
@@ -45,14 +54,26 @@ def get_distribution_samples(data_model, num_samples, true_model_text):
 
     # Generate xs as multivariate normal variables
     samples = np.random.multivariate_normal(
-        data_model.mean, data_model.cov, size=data_model.num_samples)
+        data_model.mean, data_model.cov, size=num_samples)
 
     samples_df = pd.DataFrame(data=samples, columns=data_model.variables)
 
+    for cat_col, portions in data_model.cat_portions.items():
+        for i, p in enumerate(samples_df[cat_col]):
+            counter = 0.0
+            # accumulate portions until we go above our random sample
+            for entry, portion in portions:
+                counter += portion
+                if counter > p:
+                    samples_df.loc[i, cat_col] = entry
+                    break
+
+    samples_df = calculate_dummy(samples_df, data_model.cat_portions.keys(), data_model.dummy_cols)
     # Calculate the error term in the regression
     # if not y_variance:
     #    sse = np.square(data[['y']].values - true_model.predict(xs)).sum()
     #    y_variance = sse/(data.shape[0] - data.shape[1])#np.array(data[['y']].values - true_model.predict(xs)).var()
     #    print(y_variance)
-    samples_df.loc[:, 'y'] = true_model(samples_df, true_model_text)
+    samples_df.loc[:, data_model.dependent_var] = true_model(
+        samples_df, data_model.dependent_var, true_model_text)
     return samples_df
