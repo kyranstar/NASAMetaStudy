@@ -227,6 +227,7 @@ class Ui_MainWindow(object):
         self.add_var_button.clicked.connect(self.distributions_list.add_variable)
         self.upload_button.clicked.connect(self.distributions_list.upload_file)
         self.distributions_list.rowsChanged.connect(self.correlations_table.update_variables)
+        self.fit_true_model_button.clicked.connect(self.distributions_list.fit_distributions)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):

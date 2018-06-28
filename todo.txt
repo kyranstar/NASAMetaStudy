@@ -1,26 +1,30 @@
-Ways to find optimal lasso parameter:
-	- Min MSE CV
-	- Min prediction MSE
-	- Min Bayseian Information Criteria (BIC)
-	- Min Prediction CV MSE + one standard dev (tradeoff variance for bias)
-	- Min MSE CV + One standard dev
-	- Non-negative Garotte
-	- Adaptive Lasso/LARS?
-	- SCAD
-	- Dantzig
-	- VISA
-
 TODO:
-	- Store true model funcs better
-	- Allow different parametric distributions of data
-	- Generation of categorical data
- 	- Sync two halves of correlation table
-	- Heatmap correlation table
-	- Live update graph?
-	- Error messages
-	- Clean up code with variable selection and error, make more general
-	- Possibly print computation as it works
-	- Parallelization on trial
-	- More options for variable selection
-	- More options for residual display
-	- Export to PDF
+	- Data simulation
+		- Arbitrary covariances with categorical - high and low
+		- Simulate multivariate normals and threshold categorical
+		- Better method for estimating covariance matrix
+	- Clean up
+		- Store true model funcs better
+		- Clean up code with variable selection and error, make more general
+	- Improvements
+		- Allow different parametric distributions of data
+ 		- Sync two halves of correlation table
+		- Heatmap correlation table
+		- Live update graph?
+		- Possibly print computation as it works
+		- Parallelization on trial
+		- More options for variable selection
+		- More options for residual display
+		- Export to PDF
+
+Variable selection methods:
+			- Min MSE CV
+			- Min prediction MSE
+			- Min Bayseian Information Criteria (BIC)
+			- Min Prediction CV MSE + one standard dev (tradeoff variance for bias)
+			- Min MSE CV + One standard dev
+			- Non-negative Garotte
+			- Adaptive Lasso/LARS?
+			- SCAD
+			- Dantzig
+			- VISA
