@@ -96,10 +96,12 @@ class DistributionsList(QListWidget):
             error('No data file specified')
             return
         num_items = self.model().rowCount()
-        for i, widget in [(i, self.itemWidget(self.item(i))) for i in range(num_items)]:
+        for widget in [self.itemWidget(self.item(i)) for i in range(num_items)]:
             if widget.type_combo.currentText() == "Normal":
-                widget.mean_input.setText(str(self.data_file.ix[:, i].mean()))
-                widget.variance_input.setText(str(self.data_file.ix[:, i].var()))
+                if widget.name_input.text() in self.data_file.columns:
+                    col = self.data_file.loc[:, widget.name_input.text()]
+                    widget.mean_input.setText(str(col.mean()))
+                    widget.variance_input.setText(str(col.var()))
 
     def upload_file(self):
         filename = QFileDialog.getOpenFileName(self, 'Open File', '.')
@@ -175,6 +177,10 @@ class CorrelationModel(QAbstractTableModel):
                 return QVariant()
 
     def data(self, index, role=Qt.DisplayRole):
+        if role == Qt.BackgroundColorRole and index.isValid():
+            rgb = tuple(self.heatmap[index.row(), index.column()])
+            return QColor(int(255*rgb[0]), int(255*rgb[1]), int(255*rgb[2]), 100)
+
         if role != Qt.DisplayRole:
             return QVariant()
 
@@ -184,19 +190,23 @@ class CorrelationModel(QAbstractTableModel):
         return QVariant(str(self._df.ix[index.row(), index.column()]))
 
     def setData(self, index, value, role):
-        row = self._df.index[index.row()]
-        col = self._df.columns[index.column()]
-        if hasattr(value, 'toPyObject'):
-            # PyQt4 gets a QVariant
-            value = value.toPyObject()
-        else:
-            # PySide gets an unicode
-            dtype = self._df[col].dtype
-            if dtype != object:
-                value = None if value == '' else dtype.type(value)
-        self._df.set_value(row, col, value)
-        self.myDataChanged.emit(index, index)
-        return True
+        try:
+            row = self._df.index[index.row()]
+            col = self._df.columns[index.column()]
+            if hasattr(value, 'toPyObject'):
+                # PyQt4 gets a QVariant
+                value = value.toPyObject()
+            else:
+                # PySide gets an unicode
+                dtype = self._df[col].dtype
+                if dtype != object:
+                    value = None if value == '' else dtype.type(value)
+            self._df.set_value(row, col, value)
+            self.myDataChanged.emit(index, index)
+            return True
+        except ValueError as e:
+            error(str(e))
+            return False
 
     def rowCount(self, parent=QModelIndex()):
         return len(self._df.index)
@@ -281,11 +291,14 @@ class CorrelationsTable(QTableView):
             self.model().set_dataframe_no_update(df)
 
     def refresh_heatmap(self):
-        pass
-        # print("Refreshing heatmap")
-        # norm = matplotlib.colors.Normalize(vmin=self.model()._df.min(), vmax=self.model()._df.max())
-        # for i in range(self.model().columnCount()):
-        # for j in range(self.model().rowCount()):
+        self.model().heatmap = np.zeros(self.model()._df.shape, dtype=(float, 4))
+        normalizer = matplotlib.colors.Normalize(
+            vmin=np.nanmin(self.model()._df.values), vmax=np.nanmax(self.model()._df.values))
+        for i in range(self.model().columnCount()):
+            for j in range(self.model().rowCount()):
+                frac = normalizer(self.model()._df.iloc[i, j])
+                rgb = plt.cm.viridis(frac)
+                self.model().heatmap[i, j] = rgb
         # self.item(i, j).setBackground(QColor(100, 100, 150))
         # self.model().setData(self.model().index(i, j), QBrush(Qt.red), Qt.BackgroundColorRole)
 

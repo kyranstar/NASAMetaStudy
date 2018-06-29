@@ -27,6 +27,10 @@ class MyMainWindow(QMainWindow, Ui_MainWindow):
         self.analysisDataUpdated.connect(self.error_graph.plot_error)
 
     def fit_true_model(self):
+        if self.distributions_list.data_file is None:
+            error('No data file specified')
+            return
+
         var_names = self.distributions_list.get_dummy_names()
         dependent_var = self.dependent_var_input.text()
         df = self.distributions_list.data_file_dummy[var_names]

@@ -52,17 +52,13 @@
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_2">
+            <item row="7" column="0" rowspan="3" colspan="3">
+             <widget class="CorrelationsTable" name="correlations_table"/>
+            </item>
             <item row="0" column="0" colspan="4">
              <widget class="QPushButton" name="upload_button">
               <property name="text">
                <string>Upload Data</string>
-              </property>
-             </widget>
-            </item>
-            <item row="4" column="0">
-             <widget class="QLabel" name="correlations_label">
-              <property name="text">
-               <string>Correlations</string>
               </property>
              </widget>
             </item>
@@ -94,9 +90,6 @@ p, li { white-space: pre-wrap; }
               </property>
              </widget>
             </item>
-            <item row="2" column="0" colspan="2">
-             <widget class="DistributionsList" name="distributions_list"/>
-            </item>
             <item row="1" column="2">
              <widget class="QLabel" name="true_model_label">
               <property name="text">
@@ -104,13 +97,6 @@ p, li { white-space: pre-wrap; }
               </property>
               <property name="buddy">
                <cstring>true_model_panel</cstring>
-              </property>
-             </widget>
-            </item>
-            <item row="3" column="0" colspan="3">
-             <widget class="QPushButton" name="add_var_button">
-              <property name="text">
-               <string>Add Variable</string>
               </property>
              </widget>
             </item>
@@ -148,8 +134,29 @@ p, li { white-space: pre-wrap; }
               </item>
              </layout>
             </item>
-            <item row="5" column="0" rowspan="2" colspan="3">
-             <widget class="CorrelationsTable" name="correlations_table"/>
+            <item row="2" column="0" colspan="2">
+             <widget class="DistributionsList" name="distributions_list"/>
+            </item>
+            <item row="6" column="1" colspan="2">
+             <widget class="QPushButton" name="fit_correlations_button">
+              <property name="text">
+               <string>Fit Correlations</string>
+              </property>
+             </widget>
+            </item>
+            <item row="6" column="0">
+             <widget class="QLabel" name="correlations_label">
+              <property name="text">
+               <string>Correlations</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QPushButton" name="add_var_button">
+              <property name="text">
+               <string>Add Variable</string>
+              </property>
+             </widget>
             </item>
            </layout>
           </widget>
@@ -489,8 +496,8 @@ p, li { white-space: pre-wrap; }
    <slot>add_variable()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>236</x>
-     <y>1289</y>
+     <x>291</x>
+     <y>137</y>
     </hint>
     <hint type="destinationlabel">
      <x>234</x>
@@ -538,11 +545,27 @@ p, li { white-space: pre-wrap; }
    <hints>
     <hint type="sourcelabel">
      <x>679</x>
-     <y>1255</y>
+     <y>1278</y>
     </hint>
     <hint type="destinationlabel">
      <x>170</x>
      <y>1115</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>fit_correlations_button</sender>
+   <signal>clicked()</signal>
+   <receiver>correlations_table</receiver>
+   <slot>fit_distributions()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>442</x>
+     <y>1307</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>389</x>
+     <y>1384</y>
     </hint>
    </hints>
   </connection>
