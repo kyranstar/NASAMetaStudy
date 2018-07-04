@@ -3,6 +3,8 @@ import random
 import numpy as np
 import pandas as pd
 from utility import calculate_dummy
+from scipy.stats import norm
+import math
 
 _math_funcs = ['acos', 'asin', 'atan', 'atan2', 'ceil', 'cos', 'cosh', 'degrees',
                'e', 'exp', 'fabs', 'floor', 'fmod', 'frexp', 'hypot', 'ldexp', 'log',
@@ -59,15 +61,21 @@ def get_distribution_samples(data_model, num_samples, true_model_text):
     samples_df = pd.DataFrame(data=samples, columns=data_model.variables)
 
     for cat_col, portions in data_model.cat_portions.items():
-        for i, p in enumerate(samples_df[cat_col]):
-            counter = 0.0
-            # accumulate portions until we go above our random sample
-            for entry, portion in portions:
-                counter += portion
-                if counter > p:
-                    samples_df.loc[i, cat_col] = entry
+        # Calculate inverse cumulative thresholds
+        thresholds = []
+        cumulative_portion = 0.0
+        mean = data_model.mean[data_model.variables.index(cat_col)]
+        stddev = math.sqrt(data_model.cov.loc[cat_col, cat_col])
+        for val, frac in portions:
+            cumulative_portion += frac
+            threshold = norm.ppf(
+                cumulative_portion, loc=mean, scale=stddev)
+            thresholds.append((val, threshold))
+        for i, norm_value in enumerate(samples_df[cat_col]):
+            for val, threshold in thresholds:
+                if norm_value < threshold:
+                    samples_df.loc[i, cat_col] = val
                     break
-
     samples_df = calculate_dummy(samples_df, data_model.cat_portions.keys(), data_model.dummy_cols)
     # Calculate the error term in the regression
     # if not y_variance:

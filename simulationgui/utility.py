@@ -1,14 +1,39 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.linear_model import Lasso
+from sklearn.covariance import OAS
 import scipy.stats as stats
 import pandas as pd
 from PyQt5 import QtWidgets
 
 
-def correlations(df):
-    # TODO fancy correlation estimation method
-    return df.corr()
+def correlations(df, categorical_cols):
+    # Pairwise
+    # return df.cov()
+    # remove categorical variables
+    orig_columns = df.columns
+    df = df.drop(categorical_cols, axis='columns')
+    continuous_columns = df.columns
+    # estimate covariance matrix
+    estimator = OAS()
+    estimator.fit(df.values)
+
+    # cov = pd.DataFrame(np.cov(df.values, rowvar=False),
+    #                   index=continuous_columns, columns=continuous_columns)
+    #print("OLD COV")
+    # print(cov)
+    #print("NEW COV")
+    cov = pd.DataFrame(estimator.covariance_,
+                       index=continuous_columns, columns=continuous_columns)
+
+    # Add back categorical variables
+    for cat_col in categorical_cols:
+        cov.loc[:, cat_col] = 0.3  # TODO np.nan
+        cov.loc[cat_col, :] = 0.3  # TODO np.nan
+
+    cov = cov[orig_columns].reindex(orig_columns)
+    # print(cov)
+    return cov
 
 
 def error(msg):

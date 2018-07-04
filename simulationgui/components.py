@@ -95,13 +95,16 @@ class DistributionsList(QListWidget):
         if self.data_file is None:
             error('No data file specified')
             return
-        num_items = self.model().rowCount()
-        for widget in [self.itemWidget(self.item(i)) for i in range(num_items)]:
-            if widget.type_combo.currentText() == "Normal":
-                if widget.name_input.text() in self.data_file.columns:
-                    col = self.data_file.loc[:, widget.name_input.text()]
-                    widget.mean_input.setText(str(col.mean()))
-                    widget.variance_input.setText(str(col.var()))
+        try:
+            num_items = self.model().rowCount()
+            for widget in [self.itemWidget(self.item(i)) for i in range(num_items)]:
+                if widget.type_combo.currentText() == "Normal":
+                    if widget.name_input.text() in self.data_file.columns:
+                        col = self.data_file.loc[:, widget.name_input.text()]
+                        widget.mean_input.setText(str(col.mean()))
+                        widget.variance_input.setText(str(col.var()))
+        except Exception as e:
+            error(str(e))
 
     def upload_file(self):
         filename = QFileDialog.getOpenFileName(self, 'Open File', '.')
@@ -146,8 +149,8 @@ class DistributionsList(QListWidget):
                 col_portion[entry] += 1.0/num_entries
             # convert to tuple list
             col_portion_list = []
-            for entry in self.data_file[col]:
-                col_portion_list.append((entry, col_portion[entry]))
+            for entry in col_portion:
+                col_portion_list.append((entry, col_portion.get(entry, 0.0)))
             portions[col] = col_portion_list
         return portions
 
@@ -235,8 +238,6 @@ class CorrelationModel(QAbstractTableModel):
         self.layoutChanged.emit()
 
     def flags(self, index):
-        if index.row() == index.column():
-            return Qt.ItemIsEnabled | Qt.ItemIsSelectable
         return Qt.ItemIsEditable | Qt.ItemIsEnabled | Qt.ItemIsSelectable
 
 
@@ -273,9 +274,10 @@ class CorrelationsTable(QTableView):
         data_file = get_super_parent(self).distributions_list.data_file
         if data_file is None:
             return
-        cov = correlations(data_file).loc[self.model()._df.columns, self.model()._df.columns]
+        cov = correlations(data_file[self.model()._df.columns], get_super_parent(self).distributions_list.categorical_cols).loc[self.model(
+        )._df.columns, self.model()._df.columns]
         # Fill diagonal with 1.0s
-        cov.values[[np.arange(len(cov.columns))]*2] = 1.0
+        #cov.values[[np.arange(len(cov.columns))]*2] = 1.0
 
         self.model().set_dataframe(cov)
 
@@ -283,6 +285,8 @@ class CorrelationsTable(QTableView):
         return self.model()._df
 
     def mirror_diagonal(self, topLeft, topRight):
+        if self.model()._df.size == 0:
+            return
         if topLeft.row() == topRight.row() and topLeft.column() == topRight.column():
             col = topLeft.column()
             row = topLeft.row()
@@ -291,6 +295,8 @@ class CorrelationsTable(QTableView):
             self.model().set_dataframe_no_update(df)
 
     def refresh_heatmap(self):
+        if self.model()._df.size == 0:
+            return
         self.model().heatmap = np.zeros(self.model()._df.shape, dtype=(float, 4))
         normalizer = matplotlib.colors.Normalize(
             vmin=np.nanmin(self.model()._df.values), vmax=np.nanmax(self.model()._df.values))

@@ -147,6 +147,8 @@ def worker_func(method, true_model_text, data_model, trials, num_samples, true_v
         symm_diff = len(true_variables.symmetric_difference(chosen_variables))
         if chosen_variables == true_variables:
             num_perfectly_chosen += 1
+        else:
+            print(chosen_variables)
         if len(chosen_variables) - len(true_variables.intersection(chosen_variables)) <= 1:
             num_predictors_missed += 1
         if len(true_variables) - len(true_variables.intersection(chosen_variables)) <= 1:
@@ -157,6 +159,7 @@ def worker_func(method, true_model_text, data_model, trials, num_samples, true_v
             num_symm_diff_2 += 1
         ave_symm_diff += symm_diff
         test_data = get_distribution_samples(data_model, 1, true_model_text)
+        # print(test_data)
         sum_sq_err += (test_data.loc[0, data_model.dependent_var] -
                        model.predict(test_data.drop([data_model.dependent_var], axis=1))[0])**2
 
