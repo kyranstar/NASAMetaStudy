@@ -1,10 +1,13 @@
 TODO:
+	- Normalize data
+	- Fit the model on three outcome variables and pick significant variables
 	- Clean up
 		- Store true model functions better
 		- Clean up code with variable selection and error, make more general
 		- What is really necessary from the distribution list widget?
 	- Improvements
-		- Make true model fitting customimzable
+		- Make true model fitting customizable
+		- Number the distribution list
 		- Make GUI resize the right components
 		- Don't let two variables be named the same thing
 		- Allow different parametric distributions of data
@@ -14,6 +17,8 @@ TODO:
 		- More options for variable selection
 		- More options for residual display
 		- Export to PDF
+		- Change plotting GUI area
+			- Allow adding multiple of the same method with different parameters
 
 Variable selection methods:
 			- Min MSE CV

@@ -24,7 +24,7 @@
     <item>
      <widget class="QTabWidget" name="tab_panel">
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="datatab">
        <attribute name="title">
@@ -266,10 +266,10 @@ p, li { white-space: pre-wrap; }
         </item>
         <item row="0" column="4">
          <layout class="QGridLayout" name="exp_controls">
-          <item row="1" column="0">
+          <item row="2" column="0">
            <layout class="QVBoxLayout" name="error_controls">
             <item>
-             <widget class="QGroupBox" name="groupBox">
+             <widget class="QGroupBox" name="error_metrics_group">
               <property name="title">
                <string>Error Metrics</string>
               </property>
@@ -363,6 +363,22 @@ p, li { white-space: pre-wrap; }
              </widget>
             </item>
            </layout>
+          </item>
+          <item row="1" column="0">
+           <widget class="QGroupBox" name="error_methods_group">
+            <property name="title">
+             <string>Error Methods</string>
+            </property>
+            <layout class="QVBoxLayout" name="verticalLayout_4">
+             <item>
+              <widget class="QCheckBox" name="rand_forest_checkbox">
+               <property name="text">
+                <string>Random Forest</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
           </item>
          </layout>
         </item>

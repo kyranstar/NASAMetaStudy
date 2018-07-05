@@ -324,7 +324,7 @@ class GraphWidget(pg.PlotWidget):
         sample_range = parent_widget.sample_range
         self.clear()
         self.setLabel('left', '%')
-        self.setLabel('bottom', 'number of samples')
+        self.setLabel('bottom', 'Number of Samples')
         self.setYRange(0, 100)
         self.setXRange(sample_range[0], sample_range[-1])
         if analysis_data is None:
@@ -353,6 +353,32 @@ class GraphWidget(pg.PlotWidget):
     def plot_error(self):
         parent_widget = get_super_parent(self)
         analysis_data = parent_widget.analysis_data
+        subset_methods = parent_widget.subset_methods
         error_types = parent_widget.error_types
+        sample_range = parent_widget.sample_range
+        self.clear()
+        self.setLabel('left', 'Error')
+        self.setLabel('bottom', 'Number of Samples')
+        self.setXRange(sample_range[0], sample_range[-1])
         if analysis_data is None:
             return
+        # Delete legend if it exists, and create a new one
+        if self.legend:
+            self.legend.scene().removeItem(self.legend)
+        self.legend = self.addLegend()
+
+        i = 0
+        for subset_method in subset_methods:
+            for error_metric in error_types:
+                key = (subset_method, error_metric)
+                # curve = self.plot()
+                # curve.setData(sample_range, analysis_data[key].tolist(
+                # ), name="%s: %s" % key, pen=(i, len(subset_methods)*len(subset_metrics)))
+                # i += 1
+                print(sample_range)
+                print(analysis_data[key].tolist())
+                item = pg.PlotCurveItem(
+                    x=list(sample_range), y=analysis_data[key].values, name="%s: %s" % key, pen=(i, len(subset_methods)*len(error_types)))
+                self.addItem(item)
+                i += 1
+        self.repaint()

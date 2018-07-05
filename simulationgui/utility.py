@@ -58,6 +58,7 @@ def calculate_dummy(converting_df, categorical_cols, dummy_cols=None):
         dummy_cols: The dummy columns to always have in the returned dataframe,
             even if the values didn't show up in converting_df.
     """
+    categorical_cols = set(categorical_cols).intersection(set(converting_df.columns))
     # Dummy encode the new df
     for categorical_col in categorical_cols:
         dummies = pd.get_dummies(converting_df[categorical_col]).rename(

@@ -4,6 +4,7 @@ import pandas as pd
 import impyute as impy
 import itertools
 import matplotlib.pyplot as plt
+from sklearn import preprocessing
 
 
 def scatterplot_matrix(old_data, imputed_data, names, **kwargs):
@@ -58,7 +59,10 @@ if __name__ == "__main__":
     pruned_df = df.drop(['x15', 'x16', 'x17', 'x18'], axis=1)
     data = pruned_df.values
 
-    mice_impute = pd.DataFrame(impy.mice(data.copy()),
+    # Normalizer
+    min_max_scaler = preprocessing.MinMaxScaler(feature_range=(-1, 1))
+
+    mice_impute = pd.DataFrame(min_max_scaler.fit_transform(impy.mice(data.copy())),
                                index=pruned_df.index, columns=pruned_df.columns)
 
     scatterplot_matrix(pruned_df, mice_impute, pruned_df.columns)
@@ -68,4 +72,4 @@ if __name__ == "__main__":
     mice_impute['x18'] = df['x18']
     print(mice_impute)
     mice_impute.to_csv('mice_real_data.csv')
-    plt.show()
+    # plt.show()

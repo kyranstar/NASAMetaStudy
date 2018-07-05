@@ -24,8 +24,9 @@ class DataModel():
     def __init__(self, mean, cov, variables, cat_portions, dummy_cols, dependent_var):
         """
         cov: The covariance matrix
-        cat_portions: a map of the categorical values to the
-        percentage of the time they show up.
+        cat_portions: a map of the categorical columns to a list of tuples, where the
+            first entry is a categorical value and the second is the fraction of the time
+            they show up in the data.
         """
         self.num_samples = len(mean)
         self.mean = mean
@@ -43,7 +44,6 @@ def true_model(predictors, dependent_var, true_model_text):
         scope = allowed_funcs
         for col in predictors.columns:
             scope[col] = predictors.loc[i, col]
-
         result.loc[i, dependent_var] = eval(true_model_text, {"__builtins__": None}, scope)
     return result
 
