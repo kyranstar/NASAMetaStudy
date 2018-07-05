@@ -1,17 +1,15 @@
 TODO:
-	- Data simulation
-		- Arbitrary covariances with categorical - high and low
-		- Simulate multivariate normals and threshold categorical
-		- Better method for estimating covariance matrix
 	- Clean up
-		- Store true model funcs better
+		- Store true model functions better
 		- Clean up code with variable selection and error, make more general
+		- What is really necessary from the distribution list widget?
 	- Improvements
+		- Make true model fitting customimzable
+		- Make GUI resize the right components
+		- Don't let two variables be named the same thing
 		- Allow different parametric distributions of data
- 		- Sync two halves of correlation table
-		- Heatmap correlation table
 		- Live update graph?
-		- Possibly print computation as it works
+		- Possibly print computation as it works - progress bar?
 		- Parallelization on trial
 		- More options for variable selection
 		- More options for residual display

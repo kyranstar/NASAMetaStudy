@@ -76,7 +76,7 @@ def get_distribution_samples(data_model, num_samples, true_model_text):
                 if norm_value < threshold:
                     samples_df.loc[i, cat_col] = val
                     break
-    samples_df = calculate_dummy(samples_df, data_model.cat_portions.keys(), data_model.dummy_cols)
+    #samples_df = calculate_dummy(samples_df, data_model.cat_portions.keys(), data_model.dummy_cols)
     # Calculate the error term in the regression
     # if not y_variance:
     #    sse = np.square(data[['y']].values - true_model.predict(xs)).sum()

@@ -39,7 +39,7 @@ class MyMainWindow(QMainWindow, Ui_MainWindow):
                   dependent_var)
             return
         # TODO make this customizable
-        true_model = Lasso(alpha=.5)
+        true_model = Lasso(alpha=.3)
         true_model.fit(df.drop([dependent_var], axis=1), df[[dependent_var]])
 
         coef = list(np.array(true_model.coef_).flat)

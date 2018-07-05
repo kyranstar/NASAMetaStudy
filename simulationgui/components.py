@@ -274,8 +274,10 @@ class CorrelationsTable(QTableView):
         data_file = get_super_parent(self).distributions_list.data_file
         if data_file is None:
             return
-        cov = correlations(data_file[self.model()._df.columns], get_super_parent(self).distributions_list.categorical_cols).loc[self.model(
-        )._df.columns, self.model()._df.columns]
+        cat_portions = get_super_parent(self).distributions_list.categorical_portions
+
+        cov = correlations(data_file[self.model()._df.columns], cat_portions)
+        cov = cov.loc[self.model()._df.columns, self.model()._df.columns]
         # Fill diagonal with 1.0s
         #cov.values[[np.arange(len(cov.columns))]*2] = 1.0
 

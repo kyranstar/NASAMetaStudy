@@ -5,34 +5,41 @@ from sklearn.covariance import OAS
 import scipy.stats as stats
 import pandas as pd
 from PyQt5 import QtWidgets
+from scipy.stats import norm, truncnorm
 
 
-def correlations(df, categorical_cols):
-    # Pairwise
-    # return df.cov()
-    # remove categorical variables
-    orig_columns = df.columns
-    df = df.drop(categorical_cols, axis='columns')
-    continuous_columns = df.columns
+def correlations(df, categorical_portions):
+    categorical_cols = list(categorical_portions.keys())
+    # First generate continuous samples for categorical values. We do this by sampling from
+    # a truncated normal distribution in the range for that continous variable.
+    for categorical_col in categorical_cols:
+        portions = categorical_portions[categorical_col]
+        # The values of the categorical variable in order
+        portions_keys = [val for val, frac in portions]
+        for i, cat_val in enumerate(df[categorical_col]):
+            if len(portions) == 1:
+                df.loc[i, categorical_col] = norm.rvs()
+                # Normal sample
+                continue
+            ind = portions_keys.index(cat_val)
+            # Get sums of prev portions including and not including this portion
+            sum_a = sum(map(lambda i: portions[i][1], range(ind)))
+            sum_b = sum_a + portions[ind][1]
+            # Get thresholds
+            threshold_a = norm.ppf(sum_a, loc=0.0, scale=1.0)
+            threshold_b = norm.ppf(sum_b, loc=0.0, scale=1.0)
+            # Sample truncated norm
+            df.loc[i, categorical_col] = truncnorm.rvs(threshold_a, threshold_b)
+
     # estimate covariance matrix
     estimator = OAS()
     estimator.fit(df.values)
 
-    # cov = pd.DataFrame(np.cov(df.values, rowvar=False),
-    #                   index=continuous_columns, columns=continuous_columns)
-    #print("OLD COV")
-    # print(cov)
-    #print("NEW COV")
     cov = pd.DataFrame(estimator.covariance_,
-                       index=continuous_columns, columns=continuous_columns)
+                       index=df.columns, columns=df.columns)
 
-    # Add back categorical variables
-    for cat_col in categorical_cols:
-        cov.loc[:, cat_col] = 0.3  # TODO np.nan
-        cov.loc[cat_col, :] = 0.3  # TODO np.nan
+    #cov = cov[orig_columns].reindex(orig_columns)
 
-    cov = cov[orig_columns].reindex(orig_columns)
-    # print(cov)
     return cov
 
 

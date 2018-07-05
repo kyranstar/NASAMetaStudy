@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>764</width>
-    <height>1585</height>
+    <height>990</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -30,8 +30,8 @@
        <attribute name="title">
         <string>Data Simulation</string>
        </attribute>
-       <layout class="QGridLayout" name="gridLayout" rowstretch="0" columnstretch="0">
-        <item row="0" column="0">
+       <layout class="QGridLayout" name="gridLayout" rowstretch="0,0" columnstretch="0">
+        <item row="1" column="0">
          <widget class="QScrollArea" name="datatab_scroll">
           <property name="minimumSize">
            <size>
@@ -48,25 +48,123 @@
              <x>0</x>
              <y>0</y>
              <width>712</width>
-             <height>1459</height>
+             <height>864</height>
             </rect>
            </property>
-           <layout class="QGridLayout" name="gridLayout_2">
-            <item row="7" column="0" rowspan="3" colspan="3">
+           <layout class="QGridLayout" name="gridLayout_2" rowstretch="0,0,0,0,0,1,0,0,0,0" columnstretch="0,0,1,0,0">
+            <item row="4" column="2" colspan="2">
+             <widget class="QPushButton" name="fit_correlations_button">
+              <property name="text">
+               <string>Fit Correlation Table</string>
+              </property>
+             </widget>
+            </item>
+            <item row="5" column="2" colspan="2">
              <widget class="CorrelationsTable" name="correlations_table"/>
             </item>
-            <item row="0" column="0" colspan="4">
+            <item row="1" column="2" colspan="2">
+             <widget class="QLabel" name="true_model_label">
+              <property name="text">
+               <string>True Model</string>
+              </property>
+              <property name="buddy">
+               <cstring>true_model_panel</cstring>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="0" colspan="5">
              <widget class="QPushButton" name="upload_button">
               <property name="text">
                <string>Upload Data</string>
               </property>
              </widget>
             </item>
-            <item row="2" column="2">
+            <item row="2" column="1">
+             <widget class="QGroupBox" name="groupBox_2">
+              <property name="title">
+               <string>True Model Fitting</string>
+              </property>
+              <layout class="QVBoxLayout" name="verticalLayout_5">
+               <item>
+                <layout class="QFormLayout" name="formLayout">
+                 <item row="0" column="0">
+                  <widget class="QRadioButton" name="radioButton">
+                   <property name="text">
+                    <string>Lasso</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="1">
+                  <widget class="QDoubleSpinBox" name="doubleSpinBox">
+                   <property name="maximum">
+                    <double>1.000000000000000</double>
+                   </property>
+                   <property name="singleStep">
+                    <double>0.100000000000000</double>
+                   </property>
+                   <property name="value">
+                    <double>0.300000000000000</double>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="0">
+                  <widget class="QRadioButton" name="lasso_cv_true_model">
+                   <property name="text">
+                    <string>Lasso CV</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="2" column="0">
+                  <widget class="QRadioButton" name="radioButton_2">
+                   <property name="text">
+                    <string>Lasso CV + 1 Std. Dev</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+               <item>
+                <widget class="QLineEdit" name="dependent_var_input">
+                 <property name="text">
+                  <string>Dependent Variable</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QPushButton" name="fit_true_model_button">
+                 <property name="text">
+                  <string>Fit True Model</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item row="4" column="1">
+             <widget class="QLabel" name="distributions_label">
+              <property name="text">
+               <string>Distributions</string>
+              </property>
+              <property name="buddy">
+               <cstring>distributions_list</cstring>
+              </property>
+             </widget>
+            </item>
+            <item row="5" column="0" colspan="2">
+             <widget class="DistributionsList" name="distributions_list"/>
+            </item>
+            <item row="3" column="1">
+             <widget class="QPushButton" name="add_var_button">
+              <property name="text">
+               <string>Add Variable</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="2" rowspan="2" colspan="2">
              <widget class="QTextEdit" name="true_model_panel">
               <property name="maximumSize">
                <size>
-                <width>270</width>
+                <width>1000</width>
                 <height>16777215</height>
                </size>
               </property>
@@ -77,84 +175,6 @@ p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:7.8pt; font-weight:400; font-style:normal;&quot;&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;x1 + x2&lt;/p&gt;
 &lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;br /&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="0">
-             <widget class="QLabel" name="distributions_label">
-              <property name="text">
-               <string>Distributions</string>
-              </property>
-              <property name="buddy">
-               <cstring>distributions_list</cstring>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="2">
-             <widget class="QLabel" name="true_model_label">
-              <property name="text">
-               <string>True Model</string>
-              </property>
-              <property name="buddy">
-               <cstring>true_model_panel</cstring>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="3">
-             <layout class="QVBoxLayout" name="verticalLayout_4">
-              <item>
-               <widget class="QGroupBox" name="groupBox_2">
-                <property name="title">
-                 <string>True Model Fitting</string>
-                </property>
-                <layout class="QVBoxLayout" name="verticalLayout_5">
-                 <item>
-                  <widget class="QRadioButton" name="lasso_cv_true_model">
-                   <property name="text">
-                    <string>Lasso CV</string>
-                   </property>
-                  </widget>
-                 </item>
-                </layout>
-               </widget>
-              </item>
-              <item>
-               <widget class="QLineEdit" name="dependent_var_input">
-                <property name="text">
-                 <string>Dependent Variable</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QPushButton" name="fit_true_model_button">
-                <property name="text">
-                 <string>Fit True Model</string>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </item>
-            <item row="2" column="0" colspan="2">
-             <widget class="DistributionsList" name="distributions_list"/>
-            </item>
-            <item row="6" column="1" colspan="2">
-             <widget class="QPushButton" name="fit_correlations_button">
-              <property name="text">
-               <string>Fit Correlations</string>
-              </property>
-             </widget>
-            </item>
-            <item row="6" column="0">
-             <widget class="QLabel" name="correlations_label">
-              <property name="text">
-               <string>Correlations</string>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="1">
-             <widget class="QPushButton" name="add_var_button">
-              <property name="text">
-               <string>Add Variable</string>
               </property>
              </widget>
             </item>
@@ -356,8 +376,8 @@ p, li { white-space: pre-wrap; }
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>523</width>
-             <height>1401</height>
+             <width>502</width>
+             <height>875</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_4">
