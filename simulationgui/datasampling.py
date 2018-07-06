@@ -9,12 +9,12 @@ import math
 _math_funcs = ['acos', 'asin', 'atan', 'atan2', 'ceil', 'cos', 'cosh', 'degrees',
                'e', 'exp', 'fabs', 'floor', 'fmod', 'frexp', 'hypot', 'ldexp', 'log',
                'log10', 'modf', 'pi', 'pow', 'radians', 'sin', 'sinh', 'sqrt', 'tan', 'tanh']
-_rand_funcs = ['random']
+_rand_funcs = ['random', 'normal']
 
 # use the list to filter the local namespace
 math_module = importlib.import_module('math')
 allowed_funcs = dict([(k, getattr(math_module, k)) for k in _math_funcs])
-rand_module = importlib.import_module('random')
+rand_module = importlib.import_module('numpy.random')
 allowed_funcs = dict(allowed_funcs, **dict([(k, getattr(rand_module, k)) for k in _rand_funcs]))
 # add any needed builtins back in.
 allowed_funcs['abs'] = abs
@@ -23,10 +23,16 @@ allowed_funcs['abs'] = abs
 class DataModel():
     def __init__(self, mean, cov, variables, cat_portions, dummy_cols, dependent_var):
         """
+        mean: A list of means of variables
         cov: The covariance matrix
+        variables: A list of the names of the variables
         cat_portions: a map of the categorical columns to a list of tuples, where the
             first entry is a categorical value and the second is the fraction of the time
             they show up in the data.
+        dummy_cols: A list of call of the dummy categorical columns. For example, with
+            a categorical variable x1 with the values 0,1,2, dummy_cols will be
+            ['x1_0', 'x1_1', 'x1_2'].
+        dependent_var: The variable being predicted.
         """
         self.num_samples = len(mean)
         self.mean = mean

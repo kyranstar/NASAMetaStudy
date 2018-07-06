@@ -371,12 +371,7 @@ class GraphWidget(pg.PlotWidget):
         for subset_method in subset_methods:
             for error_metric in error_types:
                 key = (subset_method, error_metric)
-                # curve = self.plot()
-                # curve.setData(sample_range, analysis_data[key].tolist(
-                # ), name="%s: %s" % key, pen=(i, len(subset_methods)*len(subset_metrics)))
-                # i += 1
-                print(sample_range)
-                print(analysis_data[key].tolist())
+
                 item = pg.PlotCurveItem(
                     x=list(sample_range), y=analysis_data[key].values, name="%s: %s" % key, pen=(i, len(subset_methods)*len(error_types)))
                 self.addItem(item)

@@ -24,7 +24,7 @@
     <item>
      <widget class="QTabWidget" name="tab_panel">
       <property name="currentIndex">
-       <number>1</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="datatab">
        <attribute name="title">
@@ -88,14 +88,17 @@
                <item>
                 <layout class="QFormLayout" name="formLayout">
                  <item row="0" column="0">
-                  <widget class="QRadioButton" name="radioButton">
+                  <widget class="QRadioButton" name="lasso_true_model">
                    <property name="text">
                     <string>Lasso</string>
                    </property>
+                   <attribute name="buttonGroup">
+                    <string notr="true">true_model_fitting_buttons</string>
+                   </attribute>
                   </widget>
                  </item>
                  <item row="0" column="1">
-                  <widget class="QDoubleSpinBox" name="doubleSpinBox">
+                  <widget class="QDoubleSpinBox" name="true_model_lasso_parameter">
                    <property name="maximum">
                     <double>1.000000000000000</double>
                    </property>
@@ -112,16 +115,29 @@
                    <property name="text">
                     <string>Lasso CV</string>
                    </property>
+                   <attribute name="buttonGroup">
+                    <string notr="true">true_model_fitting_buttons</string>
+                   </attribute>
                   </widget>
                  </item>
                  <item row="2" column="0">
-                  <widget class="QRadioButton" name="radioButton_2">
+                  <widget class="QRadioButton" name="lasso_cv_std_dev_true_model">
                    <property name="text">
                     <string>Lasso CV + 1 Std. Dev</string>
                    </property>
+                   <attribute name="buttonGroup">
+                    <string notr="true">true_model_fitting_buttons</string>
+                   </attribute>
                   </widget>
                  </item>
                 </layout>
+               </item>
+               <item>
+                <widget class="QCheckBox" name="true_model_intercept_checkbox">
+                 <property name="text">
+                  <string>Include Intercept</string>
+                 </property>
+                </widget>
                </item>
                <item>
                 <widget class="QLineEdit" name="dependent_var_input">
@@ -606,4 +622,7 @@ p, li { white-space: pre-wrap; }
    </hints>
   </connection>
  </connections>
+ <buttongroups>
+  <buttongroup name="true_model_fitting_buttons"/>
+ </buttongroups>
 </ui>

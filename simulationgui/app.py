@@ -38,18 +38,41 @@ class MyMainWindow(QMainWindow, Ui_MainWindow):
             error('Dependent variable "%s" is not a variable in the variable list' %
                   dependent_var)
             return
-        # TODO make this customizable
-        true_model = Lasso(alpha=.3)
-        true_model.fit(df.drop([dependent_var], axis=1), df[[dependent_var]])
+        # Get selected fitting method
+        selected_button = self.true_model_fitting_buttons.checkedButton()
+        if selected_button is None:
+            error('Select a fitting method')
+            return
+        fit_intercept = self.true_model_intercept_checkbox.isChecked()
+        selected_text = selected_button.text()
+        if selected_text == 'Lasso':
+            alpha = self.true_model_lasso_parameter.value()
+            true_model = Lasso(alpha=alpha, fit_intercept=fit_intercept)
+            true_model.fit(df.drop([dependent_var], axis=1), df[[dependent_var]])
+            coef = list(np.array(true_model.coef_).flat)
+        else:
+            error('Not implemented yet')
+            return
 
-        coef = list(np.array(true_model.coef_).flat)
-
+        # Create model string
         true_vars = set([i for i, x in enumerate(coef) if x != 0.0])
         predictors = df.drop([dependent_var], axis=1).columns
         model_str = ""
         for picked_var in true_vars:
             model_str += "%f * %s + " % (coef[picked_var], predictors[picked_var])
-        model_str += str(true_model.intercept_[0])
+        if fit_intercept:
+            model_str += str(true_model.intercept_[0])
+        else:
+            # Remove trailing +
+            model_str = model_str[0:-3]
+
+        # Calculate gaussian error term and add to formula
+        calculated_dependent = datasampling.true_model(
+            df.drop([dependent_var], axis=1), dependent_var, model_str)[dependent_var]
+        error_term = df.loc[:, dependent_var] - calculated_dependent
+        stddev = error_term.std()
+        model_str += " + normal(0.0, %f)" % (stddev)
+
         model_str = model_str.replace("+ -", "- ")
         self.true_model_panel.setText(model_str)
 

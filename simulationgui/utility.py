@@ -6,6 +6,7 @@ import scipy.stats as stats
 import pandas as pd
 from PyQt5 import QtWidgets
 from scipy.stats import norm, truncnorm
+import re
 
 
 def correlations(df, categorical_portions):
@@ -38,7 +39,7 @@ def correlations(df, categorical_portions):
     cov = pd.DataFrame(estimator.covariance_,
                        index=df.columns, columns=df.columns)
 
-    #cov = cov[orig_columns].reindex(orig_columns)
+    # cov = cov[orig_columns].reindex(orig_columns)
 
     return cov
 
@@ -47,6 +48,14 @@ def error(msg):
     error_dialog = QtWidgets.QErrorMessage()
     error_dialog.showMessage(msg)
     error_dialog.exec_()
+
+
+def extract_variables(formula, variables_list):
+    # Split on space, + or -, and remove empty strings
+    tokens = filter(None, re.split("[ \\+\\-\\*/]+", formula))
+    # Remove numbers
+    variables = filter(lambda s: not s.replace('.', '', 1).isdigit(), tokens)
+    return [var for var in variables if var in variables_list]
 
 
 def calculate_dummy(converting_df, categorical_cols, dummy_cols=None):

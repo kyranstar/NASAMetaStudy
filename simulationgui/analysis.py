@@ -150,8 +150,6 @@ def worker_func(method, true_model_text, data_model, trials, num_samples, true_v
         symm_diff = len(true_variables.symmetric_difference(chosen_variables))
         if chosen_variables == true_variables:
             num_perfectly_chosen += 1
-        else:
-            print(chosen_variables)
         if len(chosen_variables) - len(true_variables.intersection(chosen_variables)) <= 1:
             num_predictors_missed += 1
         if len(true_variables) - len(true_variables.intersection(chosen_variables)) <= 1:
@@ -195,7 +193,9 @@ def subset_accuracy(variables, data_model, true_model_text, sample_range, trials
         sample_range: A list of numbers of samples to try (x-axis values)
         trials: The number of trials to do for each sample size
     """
-    true_variables = set([i+1 for i, v in enumerate(variables) if v in true_model_text])
+    formula_variables = utility.extract_variables(true_model_text, variables)
+    true_variables = set([i+1 for i, v in enumerate(variables)
+                          if v in formula_variables])
 
     output_data = pd.DataFrame({'sample_size': sample_range})
 

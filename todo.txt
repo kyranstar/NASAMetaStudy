@@ -1,5 +1,4 @@
 TODO:
-	- Normalize data
 	- Fit the model on three outcome variables and pick significant variables
 	- Clean up
 		- Store true model functions better
