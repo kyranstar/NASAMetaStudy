@@ -24,7 +24,7 @@
     <item>
      <widget class="QTabWidget" name="tab_panel">
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="datatab">
        <attribute name="title">
@@ -317,6 +317,13 @@ p, li { white-space: pre-wrap; }
                <string>Selection Methods</string>
               </property>
               <layout class="QVBoxLayout" name="verticalLayout">
+               <item>
+                <widget class="QCheckBox" name="fitting_lasso_checkbox">
+                 <property name="text">
+                  <string>Fitting Lasso</string>
+                 </property>
+                </widget>
+               </item>
                <item>
                 <widget class="QCheckBox" name="lasso_cv_checkbox">
                  <property name="text">

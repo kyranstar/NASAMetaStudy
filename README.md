@@ -11,10 +11,9 @@ A GUI application that will allow quick data analysis.
 
 ## Authors
 
-* **Kyran Adams** - *Initial work* - [kyranstar](https://github.com/kyranstar)
-* **James Warner** - *Initial work* - [JamesWarnerJr](https://github.com/JamesWarnerJr)
+* **Kyran Adams** - *Initial work in Python* - [kyranstar](https://github.com/kyranstar)
+* **James Warner** - *Initial work in R* - [JamesWarnerJr](https://github.com/JamesWarnerJr)
 
 ## License
 
 TODO
-

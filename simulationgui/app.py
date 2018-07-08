@@ -102,6 +102,9 @@ class MyMainWindow(QMainWindow, Ui_MainWindow):
                 subset_metrics.append('symm_diff')
             if self.false_predictors_checkbox.isChecked():
                 subset_metrics.append('false_predictors_chosen')
+            predict_methods = []
+            if self.rand_forest_checkbox.isChecked():
+                predict_methods.append('RandomForest')
             error_types = []
             if self.prediction_mse_checkbox.isChecked():
                 error_types.append('prediction_mse')
@@ -113,6 +116,7 @@ class MyMainWindow(QMainWindow, Ui_MainWindow):
             self.sample_range = sample_range
             self.subset_metrics = subset_metrics
             self.subset_methods = subset_methods
+            self.predict_methods = predict_methods
             self.error_types = error_types
 
             data_model = datasampling.DataModel(
@@ -120,7 +124,7 @@ class MyMainWindow(QMainWindow, Ui_MainWindow):
                 self.distributions_list.get_names(), self.distributions_list.categorical_portions,
                 self.distributions_list.dummy_cols, self.dependent_var_input.text())
             self.analysis_data = analysis.subset_accuracy(
-                variables, data_model, true_model_text, sample_range, trials, subset_metrics, subset_methods, error_types)
+                variables, data_model, true_model_text, sample_range, trials, subset_metrics, subset_methods, predict_methods, error_types)
             # TODO update graph as data collected
             self.analysisDataUpdated.emit()
         except Exception as e:

@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 from sklearn.linear_model import Lasso
 from sklearn.linear_model import LassoLarsIC
+from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_squared_error
 from sklearn.model_selection import train_test_split
 from datasampling import get_distribution_samples
@@ -126,6 +127,40 @@ def lasso_bic(data, dependent_var):
     return model
 
 
+def random_forest(data, dependent_var):
+    # TODO
+    predictors = data.drop([dependent_var], axis=1)
+    # def bic_score(predictors, y, model):
+    #    sse = sum((model.predict(predictors) - y.values[0])**2)
+    #    s = np.count_nonzero(model.coef_)
+    #    n = len(predictors.columns)
+    #    cn = math.sqrt(n)/(s*s)
+    #    print(math.log(sse/n) + s*math.log(n)/n*cn)
+    #    return math.log(sse/n) + abs(s)*math.log(n)/n*cn
+
+    model = RandomForestRegressor()
+    model.fit(predictors, data[[dependent_var]].values.ravel())
+    return model
+
+
+def predict_worker_func(method, true_model_text, data_model, trials, num_samples):
+    model_generator = PREDICT_FUNCS[method]
+    sum_sq_err = 0.0
+
+    for trialnum in range(trials):
+        print("Trial %d" % trialnum)
+        sampled_data = get_distribution_samples(data_model, num_samples, true_model_text)
+
+        model = model_generator(sampled_data, data_model.dependent_var)
+
+        test_data = get_distribution_samples(data_model, 1, true_model_text)
+        # print(test_data)
+        sum_sq_err += (test_data.loc[0, data_model.dependent_var] -
+                       model.predict(test_data.drop([data_model.dependent_var], axis=1))[0])**2
+
+    return (sum_sq_err/trials)
+
+
 def worker_func(method, true_model_text, data_model, trials, num_samples, true_variables):
 
     model_generator = SUBSET_FUNCS[method]
@@ -138,14 +173,17 @@ def worker_func(method, true_model_text, data_model, trials, num_samples, true_v
     ave_symm_diff = 0.0
 
     for trialnum in range(trials):
-        print("Trial %d" % trialnum)
+        print("Trial %d, num_samples: %d" % (trialnum, num_samples))
         sampled_data = get_distribution_samples(data_model, num_samples, true_model_text)
-        sampled_data = utility.calculate_dummy(
-            sampled_data, data_model.cat_portions.keys(), data_model.dummy_cols)
 
         model = model_generator(sampled_data, data_model.dependent_var)
 
         chosen_variables = select_variables(model)
+        if chosen_variables != true_variables:
+            try:
+                print([data_model.variables[i-1] for i in chosen_variables])
+            except:
+                pass
 
         symm_diff = len(true_variables.symmetric_difference(chosen_variables))
         if chosen_variables == true_variables:
@@ -160,8 +198,6 @@ def worker_func(method, true_model_text, data_model, trials, num_samples, true_v
             num_symm_diff_2 += 1
         ave_symm_diff += symm_diff
         test_data = get_distribution_samples(data_model, 1, true_model_text)
-        test_data = utility.calculate_dummy(
-            sampled_data, data_model.cat_portions.keys(), data_model.dummy_cols)
         # print(test_data)
         sum_sq_err += (test_data.loc[0, data_model.dependent_var] -
                        model.predict(test_data.drop([data_model.dependent_var], axis=1))[0])**2
@@ -184,7 +220,7 @@ def worker_func(method, true_model_text, data_model, trials, num_samples, true_v
             sum_sq_err/trials)
 
 
-def subset_accuracy(variables, data_model, true_model_text, sample_range, trials, subset_metrics, subset_methods, error_types):
+def subset_accuracy(variables, data_model, true_model_text, sample_range, trials, subset_metrics, subset_methods, predict_methods, error_types):
     """
     Plots various metrics of how accurately lasso can select the true variables
     given certain numbers of samples.
@@ -199,7 +235,15 @@ def subset_accuracy(variables, data_model, true_model_text, sample_range, trials
 
     output_data = pd.DataFrame({'sample_size': sample_range})
 
-    pool = Pool(processes=4)
+    pool = Pool(processes=8)
+
+    for method in predict_methods:
+        mse = []
+        processes = [pool.apply_async(predict_worker_func, (method, true_model_text, data_model,
+                                                            trials, num_samples)) for num_samples in sample_range]
+        for mean_sq_err in [p.get() for p in processes]:
+            mse.append(mean_sq_err)
+        output_data[(method, 'prediction_mse')] = mse
 
     for method in subset_methods:
 
@@ -213,7 +257,6 @@ def subset_accuracy(variables, data_model, true_model_text, sample_range, trials
 
         processes = [pool.apply_async(worker_func, (method, true_model_text, data_model,
                                                     trials, num_samples, true_variables)) for num_samples in sample_range]
-
         for (num_samples,
              num_perfectly_chosen,
              num_predictors_missed,
@@ -245,3 +288,4 @@ def subset_accuracy(variables, data_model, true_model_text, sample_range, trials
 SUBSET_FUNCS = {'LassoCV': lasso_cv_mse,
                 'LassoCVStd': lambda data, dependent_var: lasso_cv_mse(data, dependent_var, stddev=1.0),
                 'LassoBIC': lasso_bic, }
+PREDICT_FUNCS = {'RandomForest': random_forest}

@@ -354,6 +354,7 @@ class GraphWidget(pg.PlotWidget):
         parent_widget = get_super_parent(self)
         analysis_data = parent_widget.analysis_data
         subset_methods = parent_widget.subset_methods
+        predict_methods = parent_widget.predict_methods
         error_types = parent_widget.error_types
         sample_range = parent_widget.sample_range
         self.clear()
@@ -368,12 +369,13 @@ class GraphWidget(pg.PlotWidget):
         self.legend = self.addLegend()
 
         i = 0
-        for subset_method in subset_methods:
+        all_methods = subset_methods + predict_methods
+        for method in all_methods:
             for error_metric in error_types:
-                key = (subset_method, error_metric)
+                key = (method, error_metric)
 
                 item = pg.PlotCurveItem(
-                    x=list(sample_range), y=analysis_data[key].values, name="%s: %s" % key, pen=(i, len(subset_methods)*len(error_types)))
+                    x=list(sample_range), y=analysis_data[key].values, name="%s: %s" % key, pen=(i, len(all_methods)*len(error_types)))
                 self.addItem(item)
                 i += 1
         self.repaint()
