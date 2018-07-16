@@ -70,6 +70,13 @@
     </widget>
    </item>
    <item>
+    <widget class="QCheckBox" name="force_checkbox">
+     <property name="text">
+      <string>Force</string>
+     </property>
+    </widget>
+   </item>
+   <item>
     <widget class="QPushButton" name="delete_button">
      <property name="text">
       <string>Delete</string>

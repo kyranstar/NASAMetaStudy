@@ -64,6 +64,8 @@ def get_distribution_samples(data_model, num_samples, true_model_text):
     samples = np.random.multivariate_normal(
         data_model.mean, data_model.cov, size=num_samples)
 
+    # TODO STANDARDIZE ALL VARS
+
     samples_df = pd.DataFrame(data=samples, columns=data_model.variables)
 
     for cat_col, portions in data_model.cat_portions.items():

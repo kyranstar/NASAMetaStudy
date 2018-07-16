@@ -10,6 +10,10 @@ import re
 
 
 def correlations(df, categorical_portions):
+    # The more samples, the slower, but the more accurate the categorical correlation
+    NUM_CATEGORICAL_SAMPLES = 5
+    for i in range(NUM_CATEGORICAL_SAMPLES):
+        df = df.append(df, ignore_index=True)
     categorical_cols = list(categorical_portions.keys())
     # First generate continuous samples for categorical values. We do this by sampling from
     # a truncated normal distribution in the range for that continous variable.
@@ -19,8 +23,8 @@ def correlations(df, categorical_portions):
         portions_keys = [val for val, frac in portions]
         for i, cat_val in enumerate(df[categorical_col]):
             if len(portions) == 1:
-                df.loc[i, categorical_col] = norm.rvs()
                 # Normal sample
+                df.loc[i, categorical_col] = norm.rvs()
                 continue
             ind = portions_keys.index(cat_val)
             # Get sums of prev portions including and not including this portion
@@ -38,9 +42,6 @@ def correlations(df, categorical_portions):
 
     cov = pd.DataFrame(estimator.covariance_,
                        index=df.columns, columns=df.columns)
-
-    # cov = cov[orig_columns].reindex(orig_columns)
-
     return cov
 
 

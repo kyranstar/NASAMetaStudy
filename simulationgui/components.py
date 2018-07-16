@@ -41,6 +41,14 @@ class DistributionsList(QListWidget):
         num_items = self.model().rowCount()
         return [self.itemWidget(self.item(i)).name_input.text() for i in range(num_items)]
 
+    def get_forced_variables(self):
+        """
+        Gets a list of variables where their 'force' checkbox is checked
+        """
+        num_items = self.model().rowCount()
+        widgets = [self.itemWidget(self.item(i)) for i in range(num_items)]
+        return [widget.name_input.text() for widget in widgets if widget.force_checkbox.isChecked()]
+
     def get_dummy_names(self):
         names = self.get_names()
         # The names of all the categorical variables

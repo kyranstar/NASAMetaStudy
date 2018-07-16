@@ -4,7 +4,7 @@ import datasampling
 from gen_ui import Ui_MainWindow
 from PyQt5.QtWidgets import QMainWindow, QApplication
 from PyQt5.QtCore import pyqtSignal
-from sklearn.linear_model import Lasso
+from sklearn.linear_model import Lasso, f
 import numpy as np
 from utility import error
 import traceback
@@ -54,12 +54,22 @@ class MyMainWindow(QMainWindow, Ui_MainWindow):
             error('Not implemented yet')
             return
 
+        forced_vars = [i for i, var_name in enumerate(
+            var_names) if var_name in self.distributions_list.get_forced_variables()]
         # Create model string
-        true_vars = set([i for i, x in enumerate(coef) if x != 0.0])
+        true_vars = [i for i, x in enumerate(coef) if x != 0.0] + forced_vars
+        unique_true_vars = []
+        [unique_true_vars.append(item) for item in true_vars if item not in unique_true_vars]
+        # Run ridge regression on included vars
+        regress = LinearRegression(fit_intercept=fit_intercept)
+        regress.fit(df.drop([dependent_var], axis=1).iloc[:, unique_true_vars], df[[dependent_var]])
+        new_coef = list(np.array(regress.coef_).flat)
+
         predictors = df.drop([dependent_var], axis=1).columns
         model_str = ""
-        for picked_var in true_vars:
-            model_str += "%f * %s + " % (coef[picked_var], predictors[picked_var])
+        for picked_var in unique_true_vars:
+            model_str += "%f * %s + " % (new_coef[unique_true_vars.index(picked_var)],
+                                         predictors[picked_var])
         if fit_intercept:
             model_str += str(true_model.intercept_[0])
         else:
