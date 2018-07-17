@@ -1,7 +1,6 @@
 TODO:
 	- Standardize simulated center means
 	- Look at CV Lasso
-	- Force in second lasso too
 
 	- Fit the model on three outcome variables and pick significant variables
 	- Clean up

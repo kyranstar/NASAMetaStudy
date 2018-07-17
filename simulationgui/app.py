@@ -4,7 +4,7 @@ import datasampling
 from gen_ui import Ui_MainWindow
 from PyQt5.QtWidgets import QMainWindow, QApplication
 from PyQt5.QtCore import pyqtSignal
-from sklearn.linear_model import Lasso, f
+from sklearn.linear_model import Lasso, LinearRegression
 import numpy as np
 from utility import error
 import traceback
@@ -98,11 +98,13 @@ class MyMainWindow(QMainWindow, Ui_MainWindow):
             # TODO clean this up
             subset_methods = []
             if self.lasso_cv_checkbox.isChecked():
-                subset_methods.append('LassoCV')
+                subset_methods.append(analysis.LassoCVMSE())
             if self.lasso_cv_std_checkbox.isChecked():
-                subset_methods.append('LassoCVStd')
+                subset_methods.append(analysis.LassoCVMSEStd())
             if self.lasso_bic_checkbox.isChecked():
-                subset_methods.append('LassoBIC')
+                subset_methods.append(analysis.LassoBIC())
+            if self.fitting_lasso_checkbox.isChecked():
+                subset_methods.append(analysis.LassoAlpha(self.true_model_lasso_parameter.value()))
             subset_metrics = []
             if self.perfectly_chosen_checkbox.isChecked():
                 subset_metrics.append('perfectly_chosen')
@@ -114,7 +116,7 @@ class MyMainWindow(QMainWindow, Ui_MainWindow):
                 subset_metrics.append('false_predictors_chosen')
             predict_methods = []
             if self.rand_forest_checkbox.isChecked():
-                predict_methods.append('RandomForest')
+                predict_methods.append(analysis.RandomForest())
             error_types = []
             if self.prediction_mse_checkbox.isChecked():
                 error_types.append('prediction_mse')
@@ -129,10 +131,14 @@ class MyMainWindow(QMainWindow, Ui_MainWindow):
             self.predict_methods = predict_methods
             self.error_types = error_types
 
+            forced_var_ind = [i for i, e in enumerate(
+                self.distributions_list.get_names()) if e in self.distributions_list.get_forced_variables()]
+
             data_model = datasampling.DataModel(
                 self.distributions_list.get_means(), self.correlations_table.get_table(),
                 self.distributions_list.get_names(), self.distributions_list.categorical_portions,
-                self.distributions_list.dummy_cols, self.dependent_var_input.text())
+                self.distributions_list.dummy_cols, self.dependent_var_input.text(),
+                forced_var_ind)
             self.analysis_data = analysis.subset_accuracy(
                 variables, data_model, true_model_text, sample_range, trials, subset_metrics, subset_methods, predict_methods, error_types)
             # TODO update graph as data collected

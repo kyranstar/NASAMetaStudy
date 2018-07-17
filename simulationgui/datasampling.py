@@ -21,7 +21,7 @@ allowed_funcs['abs'] = abs
 
 
 class DataModel():
-    def __init__(self, mean, cov, variables, cat_portions, dummy_cols, dependent_var):
+    def __init__(self, mean, cov, variables, cat_portions, dummy_cols, dependent_var, forced_variables_ind):
         """
         mean: A list of means of variables
         cov: The covariance matrix
@@ -41,6 +41,7 @@ class DataModel():
         self.cat_portions = cat_portions
         self.dummy_cols = dummy_cols
         self.dependent_var = dependent_var
+        self.forced_variables_ind = forced_variables_ind
 
 
 def true_model(predictors, dependent_var, true_model_text):

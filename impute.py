@@ -60,9 +60,9 @@ if __name__ == "__main__":
     data = pruned_df.values
 
     # Normalizer
-    min_max_scaler = preprocessing.MinMaxScaler(feature_range=(-1, 1))
+    scaler = preprocessing.StandardScaler()
 
-    mice_impute = pd.DataFrame(min_max_scaler.fit_transform(impy.mice(data.copy())),
+    mice_impute = pd.DataFrame(scaler.fit_transform(impy.mice(data.copy())),
                                index=pruned_df.index, columns=pruned_df.columns)
 
     scatterplot_matrix(pruned_df, mice_impute, pruned_df.columns)
