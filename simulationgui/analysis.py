@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 from sklearn.linear_model import Lasso
 from sklearn.linear_model import LassoLarsIC
-from sklearn.ensemble import RandomForestRegressor
+from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
 from sklearn.metrics import mean_squared_error
 from sklearn.model_selection import train_test_split
 from datasampling import get_distribution_samples
@@ -86,6 +86,17 @@ class RandomForest(SelectionMethod):
         return model
 
 
+class GradientBoosting(SelectionMethod):
+    def __init__(self):
+        self.name = 'GradientBoosting'
+
+    def trained_model(self, data, dependent_var):
+        predictors = data.drop([dependent_var], axis=1)
+        model = GradientBoostingRegressor()
+        model.fit(predictors, data[[dependent_var]].values.ravel())
+        return model
+
+
 def select_variables(model):
     """
     Given a fitted model gives a set of the 1-based indices of
@@ -122,7 +133,6 @@ def lasso_cv_mse(data, dependent_var, cv=10, alphas=np.arange(0.01, 1.0, 0.05), 
             testx = test.drop([dependent_var], axis=1)
             testy = test[[dependent_var]]
             score += mean_squared_error(testy, model.predict(testx))
-
         return score/cv
 
     if stddev == 0:

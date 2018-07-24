@@ -49,10 +49,16 @@ class MyMainWindow(QMainWindow, Ui_MainWindow):
             alpha = self.true_model_lasso_parameter.value()
             true_model = Lasso(alpha=alpha, fit_intercept=fit_intercept)
             true_model.fit(df.drop([dependent_var], axis=1), df[[dependent_var]])
-            coef = list(np.array(true_model.coef_).flat)
+        elif selected_text == 'Lasso CV':
+            true_model = analysis.lasso_cv_mse(df, dependent_var, alphas=np.arange(0.01, 1.0, 0.01))
+        elif selected_text == 'Lasso CV + 1 Std. Dev':
+            true_model = analysis.lasso_cv_mse(
+                df, dependent_var, stddev=1.0, alphas=np.arange(0.01, 1.0, 0.01))
         else:
             error('Not implemented yet')
             return
+
+        coef = list(np.array(true_model.coef_).flat)
 
         forced_vars = [i for i, var_name in enumerate(
             var_names) if var_name in self.distributions_list.get_forced_variables()]
@@ -60,10 +66,12 @@ class MyMainWindow(QMainWindow, Ui_MainWindow):
         true_vars = [i for i, x in enumerate(coef) if x != 0.0] + forced_vars
         unique_true_vars = []
         [unique_true_vars.append(item) for item in true_vars if item not in unique_true_vars]
-        # Run ridge regression on included vars
-        regress = LinearRegression(fit_intercept=fit_intercept)
-        regress.fit(df.drop([dependent_var], axis=1).iloc[:, unique_true_vars], df[[dependent_var]])
-        new_coef = list(np.array(regress.coef_).flat)
+        if unique_true_vars:
+            # Run ridge regression on included vars
+            regress = LinearRegression(fit_intercept=fit_intercept)
+            regress.fit(df.drop([dependent_var], axis=1).iloc[:,
+                                                              unique_true_vars], df[[dependent_var]])
+            new_coef = list(np.array(regress.coef_).flat)
 
         predictors = df.drop([dependent_var], axis=1).columns
         model_str = ""
@@ -75,13 +83,13 @@ class MyMainWindow(QMainWindow, Ui_MainWindow):
         else:
             # Remove trailing +
             model_str = model_str[0:-3]
-
-        # Calculate gaussian error term and add to formula
-        calculated_dependent = datasampling.true_model(
-            df.drop([dependent_var], axis=1), dependent_var, model_str)[dependent_var]
-        error_term = df.loc[:, dependent_var] - calculated_dependent
-        stddev = error_term.std()
-        model_str += " + normal(0.0, %f)" % (stddev)
+        if model_str:
+            # Calculate gaussian error term and add to formula
+            calculated_dependent = datasampling.true_model(
+                df.drop([dependent_var], axis=1), dependent_var, model_str)[dependent_var]
+            error_term = df.loc[:, dependent_var] - calculated_dependent
+            stddev = error_term.std()
+            model_str += " + normal(0.0, %f)" % (stddev)
 
         model_str = model_str.replace("+ -", "- ")
         self.true_model_panel.setText(model_str)
@@ -111,17 +119,17 @@ class MyMainWindow(QMainWindow, Ui_MainWindow):
             if self.predictors_missed_checkbox.isChecked():
                 subset_metrics.append('predictors_missed')
             if self.symm_diff_checkbox.isChecked():
-                subset_metrics.append('symm_diff')
+                subset_metrics.append('ave_symm_diff')
             if self.false_predictors_checkbox.isChecked():
                 subset_metrics.append('false_predictors_chosen')
             predict_methods = []
             if self.rand_forest_checkbox.isChecked():
                 predict_methods.append(analysis.RandomForest())
+            if self.gradient_boosting_checkbox.isChecked():
+                predict_methods.append(analysis.GradientBoosting())
             error_types = []
             if self.prediction_mse_checkbox.isChecked():
                 error_types.append('prediction_mse')
-            if self.matthews_coef_checkbox.isChecked():
-                print("Not implemented yet")
             true_model_text = self.true_model_panel.toPlainText()
             variables = self.distributions_list.get_names()
 

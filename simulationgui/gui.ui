@@ -51,7 +51,7 @@
              <height>864</height>
             </rect>
            </property>
-           <layout class="QGridLayout" name="gridLayout_2" rowstretch="0,0,0,0,0,1,0,0,0,0" columnstretch="0,0,1,0,0">
+           <layout class="QGridLayout" name="gridLayout_2" rowstretch="0,0,0,0,0,1" columnstretch="0,0,1,0,0">
             <item row="4" column="2" colspan="2">
              <widget class="QPushButton" name="fit_correlations_button">
               <property name="text">
@@ -297,13 +297,6 @@ p, li { white-space: pre-wrap; }
                  </property>
                 </widget>
                </item>
-               <item>
-                <widget class="QCheckBox" name="matthews_coef_checkbox">
-                 <property name="text">
-                  <string>Matthew's Coefficient</string>
-                 </property>
-                </widget>
-               </item>
               </layout>
              </widget>
             </item>
@@ -393,6 +386,13 @@ p, li { white-space: pre-wrap; }
              <string>Error Methods</string>
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_4">
+             <item>
+              <widget class="QCheckBox" name="gradient_boosting_checkbox">
+               <property name="text">
+                <string>Gradient Boosting</string>
+               </property>
+              </widget>
+             </item>
              <item>
               <widget class="QCheckBox" name="rand_forest_checkbox">
                <property name="text">
