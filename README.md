@@ -1,4 +1,4 @@
-# NASAMetaStudy
+# NASASimulationStudyTool
 
 A GUI application that will allow quick data analysis.
 * It will be capable of:
